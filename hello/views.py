@@ -31,3 +31,7 @@ def index(request):
 		taylorUserId = cur.fetchone()[0]
 
 		return JsonResponse({"text":"username %(username)s has user id %(user_id)s"%{"username":'taylor', "user_id":taylorUserId}})
+
+def auth(request):
+
+	return render(request, 'base.html')
