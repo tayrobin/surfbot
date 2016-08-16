@@ -151,8 +151,9 @@ def index(request):
 				print secondUberData
 
 			uberData = response.json()
-			display_name = None
+			display_name = 'uberX'
 			seconds = None
+			surgeMultiplier = None
 
 			print "Uber Data JSON:",uberData
 
@@ -164,12 +165,22 @@ def index(request):
 
 						print product
 
-						display_name == product['display_name']
+						#display_name == product['display_name']
 						seconds = product['estimate']
 						print "display_name:",display_name
 						print "seconds:",seconds
 
-				if seconds is not None and display_name is not None:
+				if secondResponse.status_code == 200:
+					for product in secondUberData['prices']:
+
+						if product['display_name'] == 'uberX':
+
+							print "product:",product
+
+							surgeMultiplier = product['surge_multiplier']
+							print "surgeMultiplier:",surgeMultiplier
+
+				if seconds is not None and surgeMultiplier is not None:
 
 					print 'Wait time for %s: %s secs.'%(display_name, seconds)
 
@@ -183,7 +194,7 @@ def index(request):
 										"attachments": [{"author_name":"Uber",
 														"author_link":"https://index.appbackr.com/apps/com.ubercab",
 														"author_icon":"https://lh3.googleusercontent.com/aMoTzec746RIY9GFOKMjipqBShsKos_KxeDtS59tRp4-ePCpGqW2bS-ySyUEL6q3gkA=w196",
-														"text":"%d:%02d:%02d" % (h, m, s),
+														"text":"Wait time: %d:%02d:%02d\nSurge Multiplier: %s" % (h, m, s, surgeMultiplier),
 														"title":"Wait time for: "+display_name,
 														"footer_icon":"https://lh3.googleusercontent.com/HN6oUA-upH3oPTvP95JQX_Yr9QeCkFnUlEn0U2XgoV9fZSOLldad1eIWln6FR1PEQ20=w196",
 														"footer":"Brought to you by your friends at Surf!"
