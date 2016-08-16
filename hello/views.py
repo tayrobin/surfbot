@@ -139,6 +139,17 @@ def index(request):
 			rateLimitRemain = int(response.headers['x-rate-limit-remaining'])
 			print "Uber calls remaining:",rateLimitRemain
 
+			if rateLimitRemain > 1:
+
+				# check for Surge Pricing
+				params = {'start_latitude':lat, 'start_longitude':lng, 'end_latitude':lat+0.1, 'end_longitude':lng+0.1, 'server_token':uber_server_token}
+				secondResponse = requests.get(uberStart+surgeCheck, params=params)
+				rateLimitRemain = int(response.headers['x-rate-limit-remaining'])
+				print "Uber calls remaining now (after second call):",rateLimitRemain
+
+				secondUberData = secondResponse.json()
+				print secondUberData
+
 			uberData = response.json()
 			display_name = None
 			seconds = None
@@ -150,6 +161,8 @@ def index(request):
 				for product in uberData['times']:
 
 					if product['display_name'] == 'uberX':
+
+						print product
 
 						display_name == product['display_name']
 						seconds = product['estimate']
