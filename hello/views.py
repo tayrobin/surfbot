@@ -158,7 +158,6 @@ def index(request):
 			print "Uber Data JSON:",uberData
 
 			if response.status_code == 200:
-
 				for product in uberData['times']:
 
 					if product['display_name'] == 'uberX':
@@ -170,43 +169,43 @@ def index(request):
 						print "display_name:",display_name
 						print "seconds:",seconds
 
-				if secondResponse.status_code == 200:
-					for product in secondUberData['prices']:
+			if secondResponse.status_code == 200:
+				for product in secondUberData['prices']:
 
-						if product['display_name'] == 'uberX':
+					if product['display_name'] == 'uberX':
 
-							print "product:",product
+						print "product:",product
 
-							surgeMultiplier = product['surge_multiplier']
-							print "surgeMultiplier:",surgeMultiplier
+						surgeMultiplier = product['surge_multiplier']
+						print "surgeMultiplier:",surgeMultiplier
 
-				if seconds is not None and surgeMultiplier is not None:
+			if seconds is not None and surgeMultiplier is not None:
 
-					print 'Wait time for %s: %s secs.'%(display_name, seconds)
+				print 'Wait time for %s: %s secs.'%(display_name, seconds)
 
-					m, s, h = 0, 0, 0
-					m, s = divmod(seconds, 60)
-					h, m = divmod(m, 60)
+				m, s, h = 0, 0, 0
+				m, s = divmod(seconds, 60)
+				h, m = divmod(m, 60)
 
-					requests.post(responseUrl,
-						data=json.dumps({"text":"Here's the current Uber information for (%s,%s):"%(lat,lng),
-										"response_type":"in_channel",
-										"attachments": [{"author_name":"Uber",
-														"author_link":"https://index.appbackr.com/apps/com.ubercab",
-														"author_icon":"https://lh3.googleusercontent.com/aMoTzec746RIY9GFOKMjipqBShsKos_KxeDtS59tRp4-ePCpGqW2bS-ySyUEL6q3gkA=w196",
-														"text":"Wait time: %d:%02d:%02d\nSurge Multiplier: %s" % (h, m, s, surgeMultiplier),
-														"title":"Wait time for: "+display_name,
-														"footer_icon":"https://lh3.googleusercontent.com/HN6oUA-upH3oPTvP95JQX_Yr9QeCkFnUlEn0U2XgoV9fZSOLldad1eIWln6FR1PEQ20=w196",
-														"footer":"Brought to you by your friends at Surf!"
-														}]
-										}))
-					return HttpResponse(status=201)
+				requests.post(responseUrl,
+					data=json.dumps({"text":"Here's the current Uber information for (%s,%s):"%(lat,lng),
+									"response_type":"in_channel",
+									"attachments": [{"author_name":"Uber",
+													"author_link":"https://index.appbackr.com/apps/com.ubercab",
+													"author_icon":"https://lh3.googleusercontent.com/aMoTzec746RIY9GFOKMjipqBShsKos_KxeDtS59tRp4-ePCpGqW2bS-ySyUEL6q3gkA=w196",
+													"text":":timer_clock:Wait time: %02d:%02d:%02d\n:zap:Surge Multiplier: %s" % (h, m, s, surgeMultiplier),
+													"title":display_name,
+													"footer_icon":"https://lh3.googleusercontent.com/HN6oUA-upH3oPTvP95JQX_Yr9QeCkFnUlEn0U2XgoV9fZSOLldad1eIWln6FR1PEQ20=w196",
+													"footer":"Brought to you by your friends at Surf!"
+													}]
+									}))
+				return HttpResponse(status=201)
 
-				else:
+			else:
 
-					print "seems service is unavailable here.."
+				print "seems service is unavailable here.."
 
-					return JsonResponse({"text": "Sorry friend, seems Uber is unavailable at the coordinates you provided me.  Please try with a different location, or with (%s, %s) later on.  :car:"%(lat,lng)})
+				return JsonResponse({"text": "Sorry friend, seems Uber is unavailable at the coordinates you provided me.  Please try with a different location, or with (%s, %s) later on.  :car:"%(lat,lng)})
 
 
 			#return JsonResponse({"text":"Sorry friend, this will be an awesome feature, I promise you.  But I'm not quite ready yet.  Thanks for thinking of me. :kissing_heart:"})
