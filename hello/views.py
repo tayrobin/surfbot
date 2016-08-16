@@ -62,14 +62,30 @@ def index(request):
 
 			print "Calling Endorsement URL for package_name:",packageName
 			endorsementResponse = requests.get(endorsementUrl, params={'package_name':packageName, 'api_key':appbackrApiKey, 'auth_token': appbackrAuthToken})
-
 			print "endorsementResponse status code:",endorsementResponse.status_code
 			print "endorsementResponse json:",endorsementResponse.json()
 
-			return JsonResponse({"text":"Here's what I got:\n>%s"%endorsementResponse.json()})
+			endorsementData = endorsementResponse.json()
 
-			#requests.post(responseUrl, data=json.dumps({"text":"Master @%(username)s says: %(wow_message)s"%{'username':inputs['user_name'][0], 'wow_message':wow_message}, "response_type":"in_channel"}))
-			#return HttpResponse(status=201)
+			if endorsementResponse.status_code == 200 and 'response' in endorsementData and 'error' not in endorsementData['response']:
+
+				if 'chosen_key' in endorsementData['response']['endorsement']:
+
+					chosen_key = endorsementData['response']['endorsement']
+					reason = endorsementData['response']['endorsement']['reason']
+
+					chosen_name = endorsementData['response']['endorsement'][chosen_key]['name']
+					chosen_icon_url = endorsementData['response']['endorsement'][chosen_key]['icon_url']
+
+					app_title = endorsementData['response']['app_details']['title']
+					app_icon = endorsementData['response']['app_details']['icon_url']
+					app_link = "https://index.appbackr.com/apps/"+packageName
+
+					requests.post(responseUrl, data=json.dumps({"text":"Here you go!", "response_type":"in_channel", "attachments": [{"author_name":app_title, "author_link":app_link, "author_icon":app_icon, "text":reason, "title":chosen_name, "thumb_url":chosen_icon_url}]}))
+					return HttpResponse(status=201)
+
+			else:
+				return JsonResponse({"text":"I'm ever so sorry, I seem to have encountered an error.  Please try again with a different Android ID, or with '%s' later on. :disappointed:"%packageName})
 		
 		#elif thyBidding == 'stuff2':
 		
