@@ -140,13 +140,50 @@ def index(request):
 			print "Uber calls remaining:",rateLimitRemain
 
 			uberData = response.json()
+			display_name = None
+			seconds = None
 
 			print "Uber Data JSON:",uberData
 
-			## product = uberData[thing][stuff]['display_name']
-			## seconds = int(uberData[thing][stuff]['estimate'])
+			if response.status_code == 200:
 
-			return JsonResponse({"text":"Sorry friend, this will be an awesome feature, I promise you.  But I'm not quite ready yet.  Thanks for thinking of me. ::kissing_heart::"})
+				for product in uberData['times']:
+
+					if product['display_name'] == 'uberX':
+
+						display_name == product['display_name']
+						seconds = product['estimate']
+
+				if seconds is not None and display_name is not None:
+
+					print 'Wait time for %s: %s secs.'%(display_name, seconds)
+
+					m, s, h = 0, 0, 0
+					m, s = divmod(seconds, 60)
+					h, m = divmod(m, 60)
+
+					requests.post(responseUrl,
+						data=json.dumps({"text":"Here's the current Uber information for (%s,%s):"%(lat,lng),
+										"response_type":"in_channel",
+										"attachments": [{"author_name":"Uber",
+														"author_link":"https://index.appbackr.com/apps/com.ubercab",
+														"author_icon":"https://lh3.googleusercontent.com/aMoTzec746RIY9GFOKMjipqBShsKos_KxeDtS59tRp4-ePCpGqW2bS-ySyUEL6q3gkA=w196",
+														"text":"%d:%02d:%02d" % (h, m, s),
+														"title":"Wait time for: "+display_name,
+														"footer_icon":"https://lh3.googleusercontent.com/HN6oUA-upH3oPTvP95JQX_Yr9QeCkFnUlEn0U2XgoV9fZSOLldad1eIWln6FR1PEQ20=w196",
+														"footer":"Brought to you by your friends at Surf!"
+														}]
+										}))
+					return HttpResponse(status=201)
+
+				else:
+
+					print "seems service is unavailable here.."
+
+					return JsonResponse({"text": "Sorry friend, seems Uber is unavailable at the coordinates you provided me.  Please try with a different location, or with (%s, %s) later on.  :car:"%(lat,lng)})
+
+
+			#return JsonResponse({"text":"Sorry friend, this will be an awesome feature, I promise you.  But I'm not quite ready yet.  Thanks for thinking of me. :kissing_heart:"})
 
 		else:
 			return JsonResponse({"text":"Sorry friend, I'm not programmed to respond to \"%(input_text)s\" yet.  Try 'help' for a list of available commands. :surfer:"%{'input_text': text[0]}})
