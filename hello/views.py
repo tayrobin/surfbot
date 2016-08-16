@@ -71,8 +71,11 @@ def index(request):
 
 				if 'chosen_key' in endorsementData['response']['endorsement']:
 
-					chosen_key = endorsementData['response']['endorsement']
+					chosen_key = endorsementData['response']['endorsement']['chosen_key']
 					reason = endorsementData['response']['endorsement']['reason']
+
+					print "chosen_key:", chosen_key
+					print "reason:", reason
 
 					chosen_name = endorsementData['response']['endorsement'][chosen_key]['name']
 					chosen_icon_url = endorsementData['response']['endorsement'][chosen_key]['icon_url']
@@ -81,7 +84,19 @@ def index(request):
 					app_icon = endorsementData['response']['app_details']['icon_url']
 					app_link = "https://index.appbackr.com/apps/"+packageName
 
-					requests.post(responseUrl, data=json.dumps({"text":"Here you go!", "response_type":"in_channel", "attachments": [{"author_name":app_title, "author_link":app_link, "author_icon":app_icon, "text":reason, "title":chosen_name, "thumb_url":chosen_icon_url, "footer_icon":"https://lh3.googleusercontent.com/HN6oUA-upH3oPTvP95JQX_Yr9QeCkFnUlEn0U2XgoV9fZSOLldad1eIWln6FR1PEQ20=w196", "footer":"Brought to you by your friends at Surf!"}]}))
+					requests.post(responseUrl,
+						data=json.dumps({"text":"Here you go!",
+										"response_type":"in_channel",
+										"attachments": [{"author_name":app_title,
+														"author_link":app_link,
+														"author_icon":app_icon,
+														"text":reason,
+														"title":chosen_name,
+														"thumb_url":chosen_icon_url,
+														"footer_icon":"https://lh3.googleusercontent.com/HN6oUA-upH3oPTvP95JQX_Yr9QeCkFnUlEn0U2XgoV9fZSOLldad1eIWln6FR1PEQ20=w196",
+														"footer":"Brought to you by your friends at Surf!"
+														}]
+										}))
 					return HttpResponse(status=201)
 
 			else:
