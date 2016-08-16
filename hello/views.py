@@ -8,6 +8,12 @@ endorsementUrl = "https://index.appbackr.com/v1/endorsements"
 appbackrApiKey = "20fe813188a344f9a29fd22d69f789d9"
 appbackrAuthToken = "f70dfa1917c6b3e3e6fb2807e2b65ca5"
 
+## Uber URLs
+uberStart = "https://api.uber.com"
+timeCheck = "/v1/estimates/time"
+surgeCheck = "/v1/estimates/price"
+uber_server_token = os.environ["UBER_SERVER_TOKEN"]
+
 ## connect to appbackr's database
 urlparse.uses_netloc.append("postgres")
 url = urlparse.urlparse(os.environ["APPBACKR_DB_URL"])
@@ -85,7 +91,7 @@ def index(request):
 					app_link = "https://index.appbackr.com/apps/"+packageName
 
 					requests.post(responseUrl,
-						data=json.dumps({"text":"Here you go!",
+						data=json.dumps({"text":"Here's your current endorsement for %s:"%app_title,
 										"response_type":"in_channel",
 										"attachments": [{"author_name":app_title,
 														"author_link":app_link,
@@ -102,9 +108,38 @@ def index(request):
 			else:
 				return JsonResponse({"text":"I'm ever so sorry, I seem to have encountered an error.  Please try again with a different Android ID, or with '%s' later on. :disappointed:"%packageName})
 		
-		#elif thyBidding == 'stuff2':
+		elif thyBidding == 'app':
+
+			## start this with just venue types, and matching any relevant SmartCards
+
+			print "They want an app for a Venue Type."
+
+			return JsonResponse({"text":"Sorry friend, this will be an awesome feature, I promise you.  But I'm not quite ready yet.  Thanks for thinking of me. ::kissing_heart::"})
 		
-		#elif thyBidding == 'stuff3':
+		elif thyBidding == 'uber':
+
+			## starting this out with just lat, lng
+
+			print "They want the current Uber stuff."
+
+			try:
+				lat = float(text[1])
+				lng = float(text[2])
+			except ValueError:
+				print "Invalid lat or lng given."
+				return JsonResponse({"text":"Sorry friend, looks like the latitude or longitude you provided me is invalid: \"%(input_text)s\" yet.  Try 'uber {lat} {lng}' for a better result. :car:"%{'input_text': text}})
+
+			#check for Car Availability
+			params = {'start_latitude':lat, 'start_longitude':lng, 'server_token':uber_server_token}
+			response = requests.get(uberStart+timeCheck, params=params)
+			rateLimitRemain = int(response.headers['x-rate-limit-remaining'])
+			print "Uber calls remaining:",rateLimitRemain
+
+			uberData = response.json()
+
+			print "Uber Data JSON:",uberData
+
+			return JsonResponse({"text":"Sorry friend, this will be an awesome feature, I promise you.  But I'm not quite ready yet.  Thanks for thinking of me. ::kissing_heart::"})
 
 		else:
 			return JsonResponse({"text":"Sorry friend, I'm not programmed to respond to \"%(input_text)s\" yet.  Try 'help' for a list of available commands. :surfer:"%{'input_text': text[0]}})
