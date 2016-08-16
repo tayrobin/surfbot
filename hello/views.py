@@ -166,6 +166,8 @@ def index(request):
 
 						display_name == product['display_name']
 						seconds = product['estimate']
+						print "display_name:",display_name
+						print "seconds:",seconds
 
 				if seconds is not None and display_name is not None:
 
