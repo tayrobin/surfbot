@@ -122,10 +122,14 @@ def index(request):
 
 			print "They want the current Uber stuff."
 
-			try:
-				lat = float(text[1])
-				lng = float(text[2])
-			except ValueError:
+			if len(text) > 2:
+				try:
+					lat = float(text[1])
+					lng = float(text[2])
+				except ValueError:
+					print "Invalid lat or lng given."
+					return JsonResponse({"text":"Sorry friend, looks like the latitude or longitude you provided me is invalid: \"%(input_text)s\" yet.  Try 'uber {lat} {lng}' for a better result. :car:"%{'input_text': text}})
+			else:
 				print "Invalid lat or lng given."
 				return JsonResponse({"text":"Sorry friend, looks like the latitude or longitude you provided me is invalid: \"%(input_text)s\" yet.  Try 'uber {lat} {lng}' for a better result. :car:"%{'input_text': text}})
 
@@ -138,6 +142,9 @@ def index(request):
 			uberData = response.json()
 
 			print "Uber Data JSON:",uberData
+
+			## product = uberData[thing][stuff]['display_name']
+			## seconds = int(uberData[thing][stuff]['estimate'])
 
 			return JsonResponse({"text":"Sorry friend, this will be an awesome feature, I promise you.  But I'm not quite ready yet.  Thanks for thinking of me. ::kissing_heart::"})
 
