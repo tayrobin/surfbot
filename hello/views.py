@@ -55,7 +55,7 @@ def index(request):
 			print "They want an endorsement."
 
 			try:
-				packageName = text[1].lower()
+				packageName = text[1]
 			except:
 				## if this fails it should be because I wasn't given a second text param, i.e. not given a package name
 				return JsonResponse({"text":"Sorry, but for me to return you an endorsement, I'll need to know what app you'd like to learn about.\nPlease provide me an Android ID (aka Package Name) like this `/surf endorsement com.Slack`. :calling:"})
@@ -90,8 +90,8 @@ def index(request):
 										"attachments": [{"author_name":app_title,
 														"author_link":app_link,
 														"author_icon":app_icon,
-														"text":reason,
-														"title":chosen_name,
+														"text":"Because "+reason.lower(),
+														"title":"Relevant for: "+chosen_name,
 														"thumb_url":chosen_icon_url,
 														"footer_icon":"https://lh3.googleusercontent.com/HN6oUA-upH3oPTvP95JQX_Yr9QeCkFnUlEn0U2XgoV9fZSOLldad1eIWln6FR1PEQ20=w196",
 														"footer":"Brought to you by your friends at Surf!"
