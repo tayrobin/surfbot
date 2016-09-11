@@ -2,6 +2,7 @@ from django.shortcuts import render
 from django.http import HttpResponse
 from django.http import JsonResponse
 import json, random, requests, os, psycopg2, urlparse
+from django.views.decorators.csrf import csrf_exempt
 
 ## appbackr Endorsement URL [requires package_name & api_key & auth_token]
 endorsementUrl = "https://index.appbackr.com/v1/endorsements"
@@ -283,6 +284,7 @@ def catchToken(request):
     return render(request, 'successful-google-auth.html')
 
 
+@csrf_exempt
 def receiveGcal(request):
 
     print "receiving GCal ping now!"
