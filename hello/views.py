@@ -216,7 +216,8 @@ def index(request):
 
 		else:
 			return JsonResponse({"text":"Sorry friend, I'm not programmed to respond to \"%(input_text)s\" yet.  Try 'help' for a list of available commands. :surfer:"%{'input_text': text[0]}})
-
+    else:
+        return render(request, 'home.html')
 
 def authCalendar(request):
 
