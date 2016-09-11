@@ -1,1 +1,12 @@
-{"web":{"client_id":"622551880865-2317scnfirngmsncanm491ie8fsbb5r3.apps.googleusercontent.com","project_id":"surf-stuff","auth_uri":"https://accounts.google.com/o/oauth2/auth","token_uri":"https://accounts.google.com/o/oauth2/token","auth_provider_x509_cert_url":"https://www.googleapis.com/oauth2/v1/certs","client_secret":"HBZQdFCq9YrVmXjfHRex9oo7","redirect_uris":["https://surfy-surfbot.herokuapp.com/auth-cal-success"],"javascript_origins":["https://surfy-surfbot.herokuapp.com"]}}
+{
+	"web":{
+		"client_id":"622551880865-2317scnfirngmsncanm491ie8fsbb5r3.apps.googleusercontent.com",
+		"project_id":"surf-stuff",
+		"auth_uri":"https://accounts.google.com/o/oauth2/auth",
+		"token_uri":"https://accounts.google.com/o/oauth2/token",
+		"auth_provider_x509_cert_url":"https://www.googleapis.com/oauth2/v1/certs",
+		"client_secret":"HBZQdFCq9YrVmXjfHRex9oo7",
+		"redirect_uris":["https://surfy-surfbot.herokuapp.com/auth-cal-success"],
+		"javascript_origins":["https://surfy-surfbot.herokuapp.com"]
+		}
+	}
