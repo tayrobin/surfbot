@@ -249,17 +249,43 @@ def catchToken(request):
     print inputs
 
     try:
-        print inputs['access_token']
+        access_token = inputs['access_token'][0]
+        print "access_token",access_token
     except:
         print "no access_token"
     try:
-        print inputs['expires_in']
+        expires_in = inputs['expires_in'][0]
+        print "expires_in",expires_in
     except:
         print "no expires_in"
     try:
-        print inputs['token_type']
+        token_type = inputs['token_type'][0]
+        print "token_type",token_type
     except:
         print "no token_type"
+
+    ## validate access_token
+    print "now validating access_token"
+    response = request.get("https://www.googleapis.com/oauth2/v3/tokeninfo", params={'access_token':access_token})
+    print response.json()
+
+    ## now use access_token to make requests
+    print "now using access_token to make calendar watch request"
+    response = requests.post("https://www.googleapis.com/calendar/v3/calendars/my_calendar@gmail.com/events/watch", headers={'Authorization':'Bearer '+access_token}, data={'id':'afh213kf923', 'type':'web_hook', 'address':'https://surfy-surfbot.herokuapp.com/receive-gcal'})
+    print response
+    print response.json()
+
+    return render(request, 'successful-google-auth.html')
+
+
+def receiveGcal(request):
+
+    print "receiving GCal ping now!"
+    print request
+    if request.method == 'GET':
+        print request.GET
+    else:
+        print request.POST
 
 
 def auth(request):
