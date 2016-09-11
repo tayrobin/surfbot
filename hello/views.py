@@ -301,6 +301,9 @@ def receiveGcal(request):
     except:
         print "no request.body"
 
+    print "printing headers"
+    print request.META
+
     return HttpResponse("OK")
 
 
