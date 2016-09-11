@@ -238,16 +238,21 @@ def authCalendarSuccess(request):
 
     print "Receiving successful GCal Auth callback"
     print request
+    inputs = dict(request.GET)
+    print inputs
 
-    ## get the inputs
-    if request.method == 'GET':
-		print "GET order up!"
-		print request.GET
-		inputs = dict(request.GET)
-    elif request.method == 'POST':
-        print "POST order up!"
-        print request.POST
-        inputs = dict(request.POST)
+    try:
+        print inputs['access_token']
+    except:
+        print "no access_token"
+    try:
+        print inputs['expires_in']
+    except:
+        print "no expires_in"
+    try:
+        print inputs['token_type']
+    except:
+        print "no token_type"
 
 
 def auth(request):
