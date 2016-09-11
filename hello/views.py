@@ -284,6 +284,35 @@ def catchToken(request):
     return render(request, 'successful-google-auth.html')
 
 
+def getCalendars():
+
+    print "Fetching Calendars List for user"
+
+    access_token = "ya29.Ci9bA_WWDH3VW0WgYjx0VIArcg2yPBXrnmjPdJd11fOm7cbbRKQQ2_sZsBnatLnrlw"
+
+    calendarListUrl = "https://www.googleapis.com/calendar/v3/users/me/calendarList" ## GET
+
+    response = requests.get(calendarListUrl, headers={'Authorization':'Bearer '+access_token, 'Content-Type': 'application/json'})
+    response = response.json()
+    print "response: ", response
+
+
+def getEvent(event_id):
+
+    print "Fetching Calendar Event for user"
+
+    access_token = "ya29.Ci9bA_WWDH3VW0WgYjx0VIArcg2yPBXrnmjPdJd11fOm7cbbRKQQ2_sZsBnatLnrlw"
+
+    calendarId = "primary"
+    eventId = event_id
+
+    eventUrl = "https://www.googleapis.com/calendar/v3/calendars/"+calendarId+"/events/"+eventId ## GET
+
+    response = requests.get(eventUrl, headers={'Authorization':'Bearer '+access_token, 'Content-Type': 'application/json'})
+    response = response.json()
+    print "response: ", response
+
+
 @csrf_exempt
 def receiveGcal(request):
 
@@ -302,7 +331,6 @@ def receiveGcal(request):
         print "no request.body"
 
     print "printing headers"
-    #print request.META
     headers = request.META
     print "headers: ", headers
 
@@ -319,6 +347,9 @@ def receiveGcal(request):
         print "googleMessageNumber: ", googleMessageNumber
     except:
         print "error parsing Google Resources..."
+
+    getCalendars()
+    getEvent(googleResourceId)
 
     return HttpResponse("OK")
 
