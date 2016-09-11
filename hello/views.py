@@ -302,7 +302,23 @@ def receiveGcal(request):
         print "no request.body"
 
     print "printing headers"
-    print request.META
+    #print request.META
+    headers = json.dumps(request.META)
+    print "headers: ", headers
+
+    try:
+        googleResourceUri = headers['HTTP_X_GOOG_RESOURCE_URI']
+        print "googleResourceUri: ", googleResourceUri
+        googleResourceState = headers['HTTP_X_GOOG_RESOURCE_STATE']
+        print "googleResourceState: ", googleResourceState
+        googleResourceId = headers['HTTP_X_GOOG_RESOURCE_ID']
+        print "googleResourceId: ", googleResourceId
+        googleChannelId = headers['HTTP_X_GOOG_CHANNEL_ID']
+        print "googleChannelId: ", googleChannelId
+        googleMessageNumber = headers['HTTP_X_GOOG_MESSAGE_NUMBER']
+        print "googleMessageNumber: ", googleMessageNumber
+    except:
+        print "error parsing Google Resources..."
 
     return HttpResponse("OK")
 
