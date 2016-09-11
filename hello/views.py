@@ -43,6 +43,9 @@ def index(request):
 		print request.POST
 		inputs = dict(request.POST)
 
+    if 'text' not in inputs:
+        return render(request, 'home.html')
+
 	## process
 	if 'text' in inputs and inputs['text'] != []:
 
@@ -216,8 +219,6 @@ def index(request):
 
 		else:
 			return JsonResponse({"text":"Sorry friend, I'm not programmed to respond to \"%(input_text)s\" yet.  Try 'help' for a list of available commands. :surfer:"%{'input_text': text[0]}})
-
-    return render(request, 'home.html')
 
 
 def authCalendar(request):
