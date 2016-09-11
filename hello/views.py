@@ -266,7 +266,7 @@ def catchToken(request):
 
     ## validate access_token
     print "now validating access_token"
-    response = request.get("https://www.googleapis.com/oauth2/v3/tokeninfo", params={'access_token':access_token})
+    response = requests.get("https://www.googleapis.com/oauth2/v3/tokeninfo", params={'access_token':access_token})
     print response.json()
 
     ## now use access_token to make requests
