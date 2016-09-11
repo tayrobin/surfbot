@@ -43,8 +43,8 @@ def index(request):
 		print request.POST
 		inputs = dict(request.POST)
 
-    if 'text' not in inputs:
-        return render(request, 'home.html')
+	if 'text' not in inputs:
+		return render(request, 'home.html')
 
 	## process
 	if 'text' in inputs and inputs['text'] != []:
