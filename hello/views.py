@@ -305,7 +305,7 @@ def getEvent(event_id):
 
     print "Fetching Calendar Event for user"
 
-    calendarId = "primary"
+    calendarId = "taylor@appbackr.com"
     eventId = event_id
 
     eventUrl = "https://www.googleapis.com/calendar/v3/calendars/"+calendarId+"/events/"+eventId ## GET
@@ -315,16 +315,16 @@ def getEvent(event_id):
     response = response.json()
     print "response: ", response
 
-def getAllEvents():
+def getAllEvents(uri):
 
     print "Fetching all Calendar Events for user"
 
-    calendarId = "primary"
+    calendarId = "taylor@appbackr.com"
 
     allEventsUrl = "https://www.googleapis.com/calendar/v3/calendars/"+calendarId+"/events"
 
     #response = requests.get(allEventsUrl, headers={'Authorization':'OAuth '+access_token, 'Content-Type': 'application/json'}, params={'access_token':access_token, 'key':google_api_key})
-    response = requests.get(allEventsUrl, headers={'Authorization':'Bearer '+access_token, 'Content-Type': 'application/json'})
+    response = requests.get(uri, headers={'Authorization':'Bearer '+access_token, 'Content-Type': 'application/json'})
     response = response.json()
     print "response: ", response
 
@@ -366,7 +366,7 @@ def receiveGcal(request):
 
     getCalendars()
     getEvent(googleResourceId)
-    getAllEvents()
+    getAllEvents(googleResourceUri)
 
     return HttpResponse("OK")
 
