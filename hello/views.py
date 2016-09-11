@@ -312,6 +312,20 @@ def getEvent(event_id):
     response = response.json()
     print "response: ", response
 
+def getAllEvents():
+
+    print "Fetching all Calendar Events for user"
+
+    access_token = "ya29.Ci9bA_WWDH3VW0WgYjx0VIArcg2yPBXrnmjPdJd11fOm7cbbRKQQ2_sZsBnatLnrlw"
+
+    calendarId = "primary"
+
+    allEventsUrl = "https://www.googleapis.com/calendar/v3/calendars/"+calendarId+"/events"
+
+    response = requests.get(allEventsUrl, headers={'Authorization':'Bearer '+access_token, 'Content-Type': 'application/json'})
+    response = response.json()
+    print "response: ", response
+
 
 @csrf_exempt
 def receiveGcal(request):
@@ -350,6 +364,7 @@ def receiveGcal(request):
 
     getCalendars()
     getEvent(googleResourceId)
+    getAllEvents()
 
     return HttpResponse("OK")
 
