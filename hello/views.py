@@ -19,6 +19,7 @@ uber_server_token = os.environ["UBER_SERVER_TOKEN"]
 GCalClientId = os.environ["GCAL_CLIENT_ID"]
 GCalClientSecret = os.environ["GCAL_CLIENT_SECRET"]
 google_api_key = os.environ['GCAL_API_KEY']
+access_token = os.environ['GCAL_ACCESS_TOKEN_TAYLOR']
 
 ## connect to appbackr's database
 urlparse.uses_netloc.append("postgres")
@@ -256,6 +257,9 @@ def catchToken(request):
     try:
         access_token = inputs['access_token'][0]
         print "access_token",access_token
+        os.environ['GCAL_ACCESS_TOKEN_TAYLOR'] = access_token
+        access_token = access_token
+        print "access_token successfully replaced on Heroku"
     except:
         print "no access_token"
     try:
@@ -289,8 +293,6 @@ def getCalendars():
 
     print "Fetching Calendars List for user"
 
-    access_token = "ya29.Ci9bA_WWDH3VW0WgYjx0VIArcg2yPBXrnmjPdJd11fOm7cbbRKQQ2_sZsBnatLnrlw"
-
     calendarListUrl = "https://www.googleapis.com/calendar/v3/users/me/calendarList" ## GET
 
     #response = requests.get(calendarListUrl, headers={'Authorization':'OAuth '+access_token, 'Content-Type': 'application/json'}, params={'access_token':access_token, 'key':google_api_key})
@@ -302,8 +304,6 @@ def getCalendars():
 def getEvent(event_id):
 
     print "Fetching Calendar Event for user"
-
-    access_token = "ya29.Ci9bA_WWDH3VW0WgYjx0VIArcg2yPBXrnmjPdJd11fOm7cbbRKQQ2_sZsBnatLnrlw"
 
     calendarId = "primary"
     eventId = event_id
@@ -318,8 +318,6 @@ def getEvent(event_id):
 def getAllEvents():
 
     print "Fetching all Calendar Events for user"
-
-    access_token = "ya29.Ci9bA_WWDH3VW0WgYjx0VIArcg2yPBXrnmjPdJd11fOm7cbbRKQQ2_sZsBnatLnrlw"
 
     calendarId = "primary"
 
