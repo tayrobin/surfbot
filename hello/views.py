@@ -293,6 +293,9 @@ def receiveGcal(request):
         print request.GET
     else:
         print request.POST
+        print request.body
+
+    return JsonResponse(status=200)
 
 
 def auth(request):
