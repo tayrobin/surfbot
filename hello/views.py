@@ -219,6 +219,7 @@ def index(request):
     else:
         return render(request, 'home.html')
 
+
 def authCalendar(request):
 
     print "Loading GCal Auth page."
