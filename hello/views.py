@@ -18,6 +18,7 @@ uber_server_token = os.environ["UBER_SERVER_TOKEN"]
 ## GCal Auths
 GCalClientId = os.environ["GCAL_CLIENT_ID"]
 GCalClientSecret = os.environ["GCAL_CLIENT_SECRET"]
+google_api_key = os.environ['GCAL_API_KEY']
 
 ## connect to appbackr's database
 urlparse.uses_netloc.append("postgres")
@@ -292,7 +293,7 @@ def getCalendars():
 
     calendarListUrl = "https://www.googleapis.com/calendar/v3/users/me/calendarList" ## GET
 
-    response = requests.get(calendarListUrl, headers={'Authorization':'OAuth '+access_token, 'Content-Type': 'application/json'}, params={'access_token':access_token})
+    response = requests.get(calendarListUrl, headers={'Authorization':'OAuth '+access_token, 'Content-Type': 'application/json'}, params={'access_token':access_token, 'key':google_api_key})
     response = response.json()
     print "response: ", response
 
@@ -308,7 +309,7 @@ def getEvent(event_id):
 
     eventUrl = "https://www.googleapis.com/calendar/v3/calendars/"+calendarId+"/events/"+eventId ## GET
 
-    response = requests.get(eventUrl, headers={'Authorization':'OAuth '+access_token, 'Content-Type': 'application/json'}, params={'access_token':access_token})
+    response = requests.get(eventUrl, headers={'Authorization':'OAuth '+access_token, 'Content-Type': 'application/json'}, params={'access_token':access_token, 'key':google_api_key})
     response = response.json()
     print "response: ", response
 
@@ -322,7 +323,7 @@ def getAllEvents():
 
     allEventsUrl = "https://www.googleapis.com/calendar/v3/calendars/"+calendarId+"/events"
 
-    response = requests.get(allEventsUrl, headers={'Authorization':'OAuth '+access_token, 'Content-Type': 'application/json'}, params={'access_token':access_token})
+    response = requests.get(allEventsUrl, headers={'Authorization':'OAuth '+access_token, 'Content-Type': 'application/json'}, params={'access_token':access_token, 'key':google_api_key})
     response = response.json()
     print "response: ", response
 
