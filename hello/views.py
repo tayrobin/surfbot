@@ -244,11 +244,10 @@ def authCalendarSuccess(request):
 		print "GET order up!"
 		print request.GET
 		inputs = dict(request.GET)
-	elif request.method == 'POST':
-		print "POST order up!"
-		print request.POST
-		inputs = dict(request.POST)
-
+    elif request.method == 'POST':
+        print "POST order up!"
+        print request.POST
+        inputs = dict(request.POST)
 
 
 def auth(request):
