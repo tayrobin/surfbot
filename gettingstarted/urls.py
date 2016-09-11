@@ -11,8 +11,8 @@ import hello.views
 
 urlpatterns = [
     url(r'^$', hello.views.index, name='index'),
-    url(r'^auth', hello.views.auth, name='auth'),
     url(r'^auth-calendar', hello.views.authCalendar, name='authCalendar'),
-    url(r'^auth-cal-success', hello.views.authCalendarSuccess, name='authCalendarSuccess')
+    url(r'^auth-cal-success', hello.views.authCalendarSuccess, name='authCalendarSuccess'),
+    url(r'^auth', hello.views.auth, name='auth')
     #url(r'^admin/', include(admin.site.urls)),
 ]
