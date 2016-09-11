@@ -271,7 +271,9 @@ def catchToken(request):
 
     ## now use access_token to make requests
     print "now using access_token to make calendar watch request"
-    response = requests.post("https://www.googleapis.com/calendar/v3/calendars/taylor@appbackr.com/events/watch", headers={'Authorization':'Bearer '+access_token, 'Content-Type': 'application/json'}, data={'id':'afh213kf923', 'type':'web_hook', 'address':'https://surfy-surfbot.herokuapp.com/receive-gcal'})
+    response = requests.post("https://www.googleapis.com/calendar/v3/calendars/taylor@appbackr.com/events/watch",
+                            headers={'Authorization':'Bearer '+access_token, 'Content-Type': 'application/json'},
+                            data=json.dumps({'id':'afh213kf923', 'type':'web_hook', 'address':'https://surfy-surfbot.herokuapp.com/receive-gcal'}))
     print response
     print response.json()
 
