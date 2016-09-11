@@ -294,8 +294,10 @@ def receiveGcal(request):
     else:
         print request.POST
 
+    print "printing body text"
+
     try:
-        print request.body
+        print "body: ", request.body
     except:
         print "no request.body"
 
