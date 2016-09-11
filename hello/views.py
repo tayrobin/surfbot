@@ -31,7 +31,15 @@ conn = psycopg2.connect(
     host=url.hostname,
     port=url.port
 )
+print "connected to appbackr DB"
 cur = conn.cursor()
+
+updateAccessToken = """UPDATE google_calendar_access_tokens
+                        SET access_token=%(access_token)s, updated_at=now()
+                        WHERE id=1"""
+getAccessToken = """SELECT access_token
+                    FROM google_calendar_access_tokens
+                    WHERE id=1"""
 
 # Create your views here.
 def index(request):
@@ -257,9 +265,10 @@ def catchToken(request):
     try:
         access_token = inputs['access_token'][0]
         print "access_token",access_token
-        os.environ['GCAL_ACCESS_TOKEN_TAYLOR'] = access_token
-        access_token = access_token
-        print "access_token successfully replaced on Heroku"
+        #os.environ['GCAL_ACCESS_TOKEN_TAYLOR'] = access_token
+        cur.execute(updateAccessToken, {'access_token':access_token})
+        conn.commit()
+        print "access_token successfully replaced in appbackr DB"
     except:
         print "no access_token"
     try:
@@ -293,10 +302,14 @@ def getCalendars():
 
     print "Fetching Calendars List for user"
 
+    cur.execute(getAccessToken,)
+    access_token = cur.fetchone()[0]
+    print "access_token: ", access_token
+
     calendarListUrl = "https://www.googleapis.com/calendar/v3/users/me/calendarList" ## GET
 
     #response = requests.get(calendarListUrl, headers={'Authorization':'OAuth '+access_token, 'Content-Type': 'application/json'}, params={'access_token':access_token, 'key':google_api_key})
-    response = requests.get(calendarListUrl, headers={'Authorization':'Bearer '+access_token, 'Content-Type': 'application/json'})
+    response = requests.get(calendarListUrl, headers={'Content-Type': 'application/json'}, params={'access_token':access_token})
     response = response.json()
     print "response: ", response
 
@@ -305,13 +318,17 @@ def getEvent(event_id):
 
     print "Fetching Calendar Event for user"
 
+    cur.execute(getAccessToken,)
+    access_token = cur.fetchone()[0]
+    print "access_token: ", access_token
+
     calendarId = "taylor@appbackr.com"
     eventId = event_id
 
     eventUrl = "https://www.googleapis.com/calendar/v3/calendars/"+calendarId+"/events/"+eventId ## GET
 
     #response = requests.get(eventUrl, headers={'Authorization':'OAuth '+access_token, 'Content-Type': 'application/json'}, params={'access_token':access_token, 'key':google_api_key})
-    response = requests.get(eventUrl, headers={'Authorization':'Bearer '+access_token, 'Content-Type': 'application/json'})
+    response = requests.get(eventUrl, headers={'Content-Type': 'application/json'}, params={'access_token':access_token})
     response = response.json()
     print "response: ", response
 
@@ -319,12 +336,16 @@ def getAllEvents(uri):
 
     print "Fetching all Calendar Events for user"
 
+    cur.execute(getAccessToken,)
+    access_token = cur.fetchone()[0]
+    print "access_token: ", access_token
+
     calendarId = "taylor@appbackr.com"
 
     allEventsUrl = "https://www.googleapis.com/calendar/v3/calendars/"+calendarId+"/events"
 
     #response = requests.get(allEventsUrl, headers={'Authorization':'OAuth '+access_token, 'Content-Type': 'application/json'}, params={'access_token':access_token, 'key':google_api_key})
-    response = requests.get(uri, headers={'Authorization':'Bearer '+access_token, 'Content-Type': 'application/json'}, params={'access_token':access_token})
+    response = requests.get(uri, headers={'Content-Type': 'application/json'}, params={'access_token':access_token})
     response = response.json()
     print "response: ", response
 
