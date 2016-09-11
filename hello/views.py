@@ -223,6 +223,7 @@ def authCalendar(request):
     print "Loading GCal Auth page."
 
     print request
+
     if request.method == "GET":
         print request.GET
     else:
@@ -237,8 +238,9 @@ def authCalendarSuccess(request):
 
     print "Receiving successful GCal Auth callback"
     print request
+
     ## get the inputs
-	if request.method == 'GET':
+    if request.method == 'GET':
 		print "GET order up!"
 		print request.GET
 		inputs = dict(request.GET)
