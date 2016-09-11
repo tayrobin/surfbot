@@ -14,6 +14,10 @@ timeCheck = "/v1/estimates/time"
 surgeCheck = "/v1/estimates/price"
 uber_server_token = os.environ["UBER_SERVER_TOKEN"]
 
+## GCal Auths
+GCalClientId = os.environ["GCAL_CLIENT_ID"]
+GCalClientSecret = os.environ["GCAL_CLIENT_SECRET"]
+
 ## connect to appbackr's database
 urlparse.uses_netloc.append("postgres")
 url = urlparse.urlparse(os.environ["APPBACKR_DB_URL"])
@@ -28,7 +32,7 @@ cur = conn.cursor()
 
 # Create your views here.
 def index(request):
-	
+
 	## get the inputs
 	if request.method == 'GET':
 		print "GET order up!"
@@ -107,7 +111,7 @@ def index(request):
 
 			else:
 				return JsonResponse({"text":"I'm ever so sorry, I seem to have encountered an error.  Please try again with a different Android ID, or with '%s' later on. :disappointed:"%packageName})
-		
+
 		elif thyBidding == 'app':
 
 			## start this with just venue types, and matching any relevant SmartCards
@@ -115,7 +119,7 @@ def index(request):
 			print "They want an app for a Venue Type."
 
 			return JsonResponse({"text":"Sorry friend, this will be an awesome feature, I promise you.  But I'm not quite ready yet.  Thanks for thinking of me. ::kissing_heart::"})
-		
+
 		elif thyBidding == 'uber':
 
 			## starting this out with just lat, lng
@@ -214,8 +218,34 @@ def index(request):
 			return JsonResponse({"text":"Sorry friend, I'm not programmed to respond to \"%(input_text)s\" yet.  Try 'help' for a list of available commands. :surfer:"%{'input_text': text[0]}})
 
 
+def authCalendar(request):
+
+    print "Loading GCal Auth page."
+
+    print request
+    if request.method == "GET":
+        print request.GET
+    else:
+        print request.POST
+
+    return render(request, 'google-auth.html')
+
+    print "GCal Auth loaded with no problems."
 
 
+def authCalendarSuccess(request):
+
+    print "Receiving successful GCal Auth callback"
+    print request
+    ## get the inputs
+	if request.method == 'GET':
+		print "GET order up!"
+		print request.GET
+		inputs = dict(request.GET)
+	elif request.method == 'POST':
+		print "POST order up!"
+		print request.POST
+		inputs = dict(request.POST)
 
 
 
