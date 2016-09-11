@@ -236,6 +236,13 @@ def authCalendar(request):
 
 def authCalendarSuccess(request):
 
+    print "got a good GCal auth coming back"
+
+    render(request, 'google-auth-success.html')
+
+
+def catchToken(request):
+
     print "Receiving successful GCal Auth callback"
     print request
     inputs = dict(request.GET)
