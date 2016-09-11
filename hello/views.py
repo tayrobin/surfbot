@@ -324,7 +324,7 @@ def getAllEvents(uri):
     allEventsUrl = "https://www.googleapis.com/calendar/v3/calendars/"+calendarId+"/events"
 
     #response = requests.get(allEventsUrl, headers={'Authorization':'OAuth '+access_token, 'Content-Type': 'application/json'}, params={'access_token':access_token, 'key':google_api_key})
-    response = requests.get(uri, headers={'Authorization':'Bearer '+access_token, 'Content-Type': 'application/json'})
+    response = requests.get(uri, headers={'Authorization':'Bearer '+access_token, 'Content-Type': 'application/json'}, params={'access_token':access_token})
     response = response.json()
     print "response: ", response
 
