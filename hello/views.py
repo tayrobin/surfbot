@@ -303,7 +303,7 @@ def receiveGcal(request):
 
     print "printing headers"
     #print request.META
-    headers = json.dumps(request.META)
+    headers = request.META
     print "headers: ", headers
 
     try:
