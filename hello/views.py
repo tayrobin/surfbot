@@ -294,7 +294,7 @@ def getCalendars():
     calendarListUrl = "https://www.googleapis.com/calendar/v3/users/me/calendarList" ## GET
 
     #response = requests.get(calendarListUrl, headers={'Authorization':'OAuth '+access_token, 'Content-Type': 'application/json'}, params={'access_token':access_token, 'key':google_api_key})
-    response = requests.get(calendarListUrl, params={'key':google_api_key})
+    response = requests.get(calendarListUrl, headers={'Authorization':'OAuth '+access_token, 'Content-Type': 'application/json'},params={'key':google_api_key})
     response = response.json()
     print "response: ", response
 
@@ -311,7 +311,7 @@ def getEvent(event_id):
     eventUrl = "https://www.googleapis.com/calendar/v3/calendars/"+calendarId+"/events/"+eventId ## GET
 
     #response = requests.get(eventUrl, headers={'Authorization':'OAuth '+access_token, 'Content-Type': 'application/json'}, params={'access_token':access_token, 'key':google_api_key})
-    response = requests.get(eventUrl, params={'key':google_api_key})
+    response = requests.get(eventUrl, headers={'Authorization':'OAuth '+access_token, 'Content-Type': 'application/json'},params={'key':google_api_key})
     response = response.json()
     print "response: ", response
 
@@ -326,7 +326,7 @@ def getAllEvents():
     allEventsUrl = "https://www.googleapis.com/calendar/v3/calendars/"+calendarId+"/events"
 
     #response = requests.get(allEventsUrl, headers={'Authorization':'OAuth '+access_token, 'Content-Type': 'application/json'}, params={'access_token':access_token, 'key':google_api_key})
-    response = requests.get(allEventsUrl, params={'key':google_api_key})
+    response = requests.get(allEventsUrl, headers={'Authorization':'OAuth '+access_token, 'Content-Type': 'application/json'},params={'key':google_api_key})
     response = response.json()
     print "response: ", response
 
