@@ -15,6 +15,6 @@ urlpatterns = [
     url(r'^auth-cal-success', hello.views.authCalendarSuccess, name='authCalendarSuccess'),
     url(r'^auth', hello.views.auth, name='auth'),
     url(r'^catchtoken', hello.views.catchToken, name='catchToken'),
-    url(r'^receive-gcal', hellow.views.receiveGcal, name='receiveGcal')
+    url(r'^receive-gcal', hello.views.receiveGcal, name='receiveGcal')
     #url(r'^admin/', include(admin.site.urls)),
 ]
