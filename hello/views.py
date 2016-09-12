@@ -385,9 +385,12 @@ def receiveGcal(request):
     except:
         print "error parsing Google Resources..."
 
-    getCalendars()
-    getEvent(googleResourceId)
-    getAllEvents(googleResourceUri)
+    if googleResourceState == 'sync':
+        getCalendars()
+        #getEvent(googleResourceId)
+        getAllEvents(googleResourceUri)
+    elif googleResourceState == 'exists':
+        print "incoming exists webhook..\nnot sure what to do..."
 
     return HttpResponse("OK")
 
