@@ -323,7 +323,7 @@ def catchToken(request):
     print response
     print response.json()
 
-    return HttpResponseRedirect('successful-google-auth.html')
+    return render(request, 'successful-google-auth.html')
 
 
 def getCalendars():
