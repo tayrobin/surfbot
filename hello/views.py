@@ -296,6 +296,7 @@ def catchToken(request):
         conn.commit()
         print "access_token successfully replaced in appbackr DB"
     except:
+        access_token = ""
         print "no access_token"
     try:
         expires_in = inputs['expires_in'][0]
