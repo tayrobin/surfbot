@@ -438,7 +438,7 @@ def getNewEvents(uri, uuid, resource_id):
 
         print response
         print "headers: ", response.headers
-        print "json: ", response.json()
+        print "text: ", response.text
 
 
 @csrf_exempt
@@ -478,7 +478,8 @@ def receiveGcal(request):
         googleResourceState = 'fail'
 
     if googleResourceState == 'sync':
-        getAllEvents(googleResourceUri, googleChannelId, googleResourceId)
+        #getAllEvents(googleResourceUri, googleChannelId, googleResourceId)
+        print "sync..passing"
 
     elif googleResourceState == 'exists':
         getNewEvents(googleResourceUri, googleChannelId, googleResourceId)
