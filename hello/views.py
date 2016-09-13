@@ -38,6 +38,11 @@ cur = conn.cursor()
 updateAccessToken = """UPDATE google_calendar_access_tokens
                         SET access_token=%(access_token)s, updated_at=now(), refresh_token=%(refresh_token)s
                         WHERE id=1"""
+insertNewAccessToken = """INSERT INTO google_calendar_access_tokens (access_token, token_type, expires_in, created_at, updated_at, refresh_token)
+                            VALUES (%(access_token)s, %(token_type)s, %(expires_in)s, now(), now(), %(refresh_token)s)"""
+updateUserData = """UPDATE google_calendar_access_tokens
+                    SET primary_calendar=%(primary_calendar)s, updated_at=now(), resource_uri=%(resource_uri)s
+                    WHERE access_token=%(access_token)s"""
 getAccessToken = """SELECT access_token
                     FROM google_calendar_access_tokens
                     WHERE id=1"""
@@ -277,7 +282,7 @@ def authCalendarSuccess(request):
     accessToken = authData['access_token']
 
     ## log to server for later use
-    cur.execute(updateAccessToken, {'access_token':accessToken, 'refresh_token':refreshToken})
+    cur.execute(insertNewAccessToken, {'access_token':accessToken, 'refresh_token':refreshToken, 'token_type':tokenType, 'expires_in':expiresIn})
     conn.commit()
     print "New access token successfully stored!"
 
@@ -285,12 +290,19 @@ def authCalendarSuccess(request):
 
     calendar = getCalendars(accessToken)
 
-    success = askWatchCalendar(calendar, accessToken)
+    if calendar is not None:
 
-    if success:
-        return HttpResponse('%s is now being watched!'%calendar)
+        success, resource_uri = askWatchCalendar(calendar, accessToken)
+
+        if success:
+            cur.execute(updateUserData, {'primary_calendar':calendar, 'resource_uri':resource_uri, 'access_token':accessToken})
+            conn.commit()
+            return HttpResponse('%s is now being watched!'%calendar)
+        else:
+            return HttpResponse('There seems to have been an error... Please try again.')
+
     else:
-        return HttpResponse('There seems to have been an error... Please try again.')
+        return HttpResponse('Failed to find the primary calendar for this user...')
 
 
 def askWatchCalendar(calendar, access_token):
@@ -305,58 +317,17 @@ def askWatchCalendar(calendar, access_token):
                                 headers={'Authorization':'Bearer '+access_token, 'Content-Type': 'application/json'},
                                 data=json.dumps({'id':str(uuid.uuid4()), 'type':'web_hook', 'address':'https://surfy-surfbot.herokuapp.com/receive-gcal'}))
     print response
-    print response.json()
+    watchData = response.json()
+    print "watchData: ", watchData
 
     if response.status_code == 200:
-        return True
+
+        resource_uri = watchData['resourceUri']
+
+        return True, resource_uri
     else:
         return False
 
-
-'''
-def catchToken(request):
-
-    print "Receiving successful GCal Auth callback"
-    print request
-    inputs = dict(request.GET)
-    print inputs
-
-    try:
-        access_token = inputs['access_token'][0]
-        print "access_token",access_token
-        #os.environ['GCAL_ACCESS_TOKEN_TAYLOR'] = access_token
-        cur.execute(updateAccessToken, {'access_token':access_token})
-        conn.commit()
-        print "access_token successfully replaced in appbackr DB"
-    except:
-        access_token = ""
-        print "no access_token"
-    try:
-        expires_in = inputs['expires_in'][0]
-        print "expires_in",expires_in
-    except:
-        print "no expires_in"
-    try:
-        token_type = inputs['token_type'][0]
-        print "token_type",token_type
-    except:
-        print "no token_type"
-
-    ## validate access_token
-    print "now validating access_token"
-    response = requests.get("https://www.googleapis.com/oauth2/v3/tokeninfo", params={'access_token':access_token})
-    print response.json()
-
-    ## now use access_token to make requests
-    print "now using access_token to make calendar watch request"
-    response = requests.post("https://www.googleapis.com/calendar/v3/calendars/taylor@appbackr.com/events/watch",
-                            headers={'Authorization':'Bearer '+access_token, 'Content-Type': 'application/json'},
-                            data=json.dumps({'id':str(uuid.uuid4()), 'type':'web_hook', 'address':'https://surfy-surfbot.herokuapp.com/receive-gcal'}))
-    print response
-    print response.json()
-
-    return render(request, 'successful-google-auth.html')
-'''
 
 def getCalendars(access_token):
 
@@ -380,6 +351,8 @@ def getCalendars(access_token):
             if 'primary' in calendar and calendar['primary'] == True:
 
                 return calendar['id']
+
+    return None
 
 
 def getEvent(event_id):
