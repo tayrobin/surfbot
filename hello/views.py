@@ -52,6 +52,8 @@ getAccessTokenAndSyncToken = """SELECT access_token, next_sync_token
 saveNextSyncToken = """UPDATE google_calendar_access_tokens
                         SET next_sync_token=%(next_sync_token)s, updated_at=now()
                         WHERE resource_uri=%(resource_uri)s AND resource_uuid=%(resource_uuid)s AND resource_id=%(resource_id)s"""
+insertNewUser = """INSERT INTO google_calendar_users (user_name, image_url, email) VALUES (%(user_name)s, %(image_url)s, %(email)s)"""
+selectExistingUser = "SELECT id FROM google_calendar_users WHERE user_name=%(user_name)s AND email=%(email)s"
 
 # Create your views here.
 def index(request):
@@ -447,15 +449,36 @@ def catchNewGoogleUser(request):
 
     print "New Google User incoming"
 
-    inputs = dict(request.POST)
-    print "inputs: ", inputs
-    print "body: ", request.body
-    print "headers: ", request.META
+    print request
+    inputs = dict(request.body)
+    print "body: ", inputs
 
     ## now insert into users table
-    ## and redirect user to GCal auth page
+    try:
+        user_name = inputs['user_name']
+    except:
+        user_name = None
+    try:
+        image_url = inputs['image_url']
+    except:
+        image_url = None
+    try:
+        email = inputs['email']
+    except:
+        email = None
 
-    return HttpResponse("OK")
+    cur.execute(selectExistingUser, {'user_name':user_name, 'email':email})
+    existingId = cur.fetchone()
+
+    if existingId is None or existingId[0] is None:
+        cur.execute(insertNewUser, {'user_name':user_name, 'image_url':image_url, 'email':email})
+        conn.commit()
+        print "new User submitted"
+    else:
+        print "I already have this User logged as: %s"%existingId
+
+    ## and redirect user to GCal auth page
+    return render(request, 'google-auth.html')
 
 
 @csrf_exempt
