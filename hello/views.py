@@ -45,7 +45,7 @@ updateUserData = """UPDATE google_calendar_access_tokens
                     WHERE access_token=%(access_token)s"""
 getAccessToken = """SELECT access_token
                     FROM google_calendar_access_tokens
-                    WHERE id=1"""
+                    WHERE resource_uri=%(resource_uri)s AND resource_uuid=%(resource_uuid)s AND resource_id=%(resource_id)s"""
 
 # Create your views here.
 def index(request):
@@ -376,20 +376,20 @@ def getEvent(event_id):
     print "response: ", response
 
 
-def getAllEvents(uri):
+def getAllEvents(uri, access_token):
 
     print "Fetching all Calendar Events for user"
 
-    cur.execute(getAccessToken,)
-    access_token = cur.fetchone()[0]
-    print "access_token: ", access_token
+    #cur.execute(getAccessToken,)
+    #access_token = cur.fetchone()[0]
+    #print "access_token: ", access_token
 
-    calendarId = "taylor@appbackr.com"
+    #calendarId = "taylor@appbackr.com"
 
-    allEventsUrl = "https://www.googleapis.com/calendar/v3/calendars/"+calendarId+"/events"
+    #allEventsUrl = "https://www.googleapis.com/calendar/v3/calendars/"+calendarId+"/events"
 
     #response = requests.get(allEventsUrl, headers={'Authorization':'OAuth '+access_token, 'Content-Type': 'application/json'}, params={'access_token':access_token, 'key':google_api_key})
-    response = requests.get(uri, headers={'Content-Type': 'application/json'}, params={'access_token':access_token})
+    response = requests.get(uri, headers={'Content-Type': 'application/json'}, params={'access_token':access_token, 'maxResults':10})
     response = response.json()
     print "response: ", response
 
@@ -434,7 +434,10 @@ def receiveGcal(request):
         #getEvent(googleResourceId)
         #getAllEvents(googleResourceUri)
     elif googleResourceState == 'exists':
-        print "incoming exists webhook..\nnot sure what to do..."
+        #print "incoming exists webhook..\nnot sure what to do..."
+        cur.execute(getAccessToken, {'resource_uri':googleResourceUri, 'resource_uuid':googleChannelId, 'resource_id':googleResourceId})
+        accessToken = cur.fetchone()[0]
+        getAllEvents(googleResourceUri, accessToken)
 
     return HttpResponse("OK")
 
