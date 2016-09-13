@@ -282,24 +282,35 @@ def authCalendarSuccess(request):
     print "New access token successfully stored!"
 
     print "calling watch calendar method"
-    askWatchCalendar()
 
-    return render(request, 'google-auth.html')
+    calendar = getCalendars(accessToken)
+
+    success = askWatchCalendar(calendar, accessToken)
+
+    if success:
+        return HttpResponse('%s is now being watched!'%calendar)
+    else:
+        return HttpResponse('There seems to have been an error... Please try again.')
 
 
-def askWatchCalendar():
+def askWatchCalendar(calendar, access_token):
 
     print "asking for permission to watch calendar"
 
-    cur.execute(getAccessToken,)
-    access_token = cur.fetchone()[0]
-    print "access_token: ", access_token
+    #cur.execute(getAccessToken,)
+    #access_token = cur.fetchone()[0]
+    #print "access_token: ", access_token
 
-    response = requests.post("https://www.googleapis.com/calendar/v3/calendars/taylor@appbackr.com/events/watch",
+    response = requests.post("https://www.googleapis.com/calendar/v3/calendars/"+calendar+"/events/watch",
                                 headers={'Authorization':'Bearer '+access_token, 'Content-Type': 'application/json'},
                                 data=json.dumps({'id':str(uuid.uuid4()), 'type':'web_hook', 'address':'https://surfy-surfbot.herokuapp.com/receive-gcal'}))
     print response
     print response.json()
+
+    if response.status_code == 200:
+        return True
+    else:
+        return False
 
 
 '''
@@ -347,20 +358,28 @@ def catchToken(request):
     return render(request, 'successful-google-auth.html')
 '''
 
-def getCalendars():
+def getCalendars(access_token):
 
     print "Fetching Calendars List for user"
 
-    cur.execute(getAccessToken,)
-    access_token = cur.fetchone()[0]
-    print "access_token: ", access_token
+    #cur.execute(getAccessToken,)
+    #access_token = cur.fetchone()[0]
+    #print "access_token: ", access_token
 
     calendarListUrl = "https://www.googleapis.com/calendar/v3/users/me/calendarList" ## GET
 
     #response = requests.get(calendarListUrl, headers={'Authorization':'OAuth '+access_token, 'Content-Type': 'application/json'}, params={'access_token':access_token, 'key':google_api_key})
     response = requests.get(calendarListUrl, headers={'Content-Type': 'application/json'}, params={'access_token':access_token})
-    response = response.json()
-    print "response: ", response
+    if response.status_code == 200:
+
+        responseData = response.json()
+        print "response: ", responseData
+
+        for calendar in responseData['items']:
+
+            if 'primary' in calendar and calendar['primary'] == True:
+
+                return calendar['id']
 
 
 def getEvent(event_id):
@@ -436,9 +455,9 @@ def receiveGcal(request):
         print "error parsing Google Resources..."
 
     if googleResourceState == 'sync':
-        getCalendars()
+        getCalendars('hi')
         #getEvent(googleResourceId)
-        getAllEvents(googleResourceUri)
+        #getAllEvents(googleResourceUri)
     elif googleResourceState == 'exists':
         print "incoming exists webhook..\nnot sure what to do..."
 
