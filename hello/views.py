@@ -449,6 +449,7 @@ def catchNewGoogleUser(request):
 
     inputs = dict(request.POST)
     print "inputs: ", inputs
+    print "body: ", request.body
     print "headers: ", request.META
 
     ## now insert into users table
