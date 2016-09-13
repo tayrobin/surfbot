@@ -46,6 +46,12 @@ updateUserData = """UPDATE google_calendar_access_tokens
 getAccessToken = """SELECT access_token
                     FROM google_calendar_access_tokens
                     WHERE resource_uri=%(resource_uri)s AND resource_uuid=%(resource_uuid)s AND resource_id=%(resource_id)s"""
+getAccessTokenAndSyncToken = """SELECT access_token, next_sync_token
+                                FROM google_calendar_access_tokens
+                                WHERE resource_uri=%(resource_uri)s AND resource_uuid=%(resource_uuid)s AND resource_id=%(resource_id)s"""
+saveNextSyncToken = """UPDATE google_calendar_access_tokens
+                        SET next_sync_token=%(next_sync_token)s
+                        WHERE resource_uri=%(resource_uri)s AND resource_uuid=%(resource_uuid)s AND resource_id=%(resource_id)s"""
 
 # Create your views here.
 def index(request):
@@ -376,22 +382,58 @@ def getEvent(event_id):
     print "response: ", response
 
 
-def getAllEvents(uri, access_token):
+def getAllEvents(uri, uuid, resource_id):
 
     print "Fetching all Calendar Events for user"
 
-    #cur.execute(getAccessToken,)
-    #access_token = cur.fetchone()[0]
-    #print "access_token: ", access_token
+    cur.execute(getAccessToken, {'resource_uri':uri, 'resource_uuid':uuid, 'resource_id':resource_id})
+    access_token = cur.fetchone()[0]
 
-    #calendarId = "taylor@appbackr.com"
-
-    #allEventsUrl = "https://www.googleapis.com/calendar/v3/calendars/"+calendarId+"/events"
-
-    #response = requests.get(allEventsUrl, headers={'Authorization':'OAuth '+access_token, 'Content-Type': 'application/json'}, params={'access_token':access_token, 'key':google_api_key})
     response = requests.get(uri, headers={'Content-Type': 'application/json'}, params={'access_token':access_token, 'maxResults':10})
-    response = response.json()
-    print "response: ", response
+
+    if response.status_code == 200:
+        responseData = response.json()
+        print "response: ", responseData
+
+        next_sync_token = responseData['nextSyncToken']
+        print "next_sync_token: ", next_sync_token
+
+        cur.execute(saveNextSyncToken, {'next_sync_token':next_sync_token, 'resource_uri':uri, 'resource_uuid':uuid, 'resource_id':resource_id})
+        conn.commit()
+        print "next_sync_token saved."
+
+
+
+def getNewEvents(uri, uuid, resource_id):
+
+    print "Updating Events since last sync"
+
+    # access_token, sync_token needed
+    cur.execute(getAccessTokenAndSyncToken, {'resource_uri':uri, 'resource_uuid':uuid, 'resource_id':resource_id})
+    tokens = cur.fetchone()
+    access_token = tokens['access_token']
+    sync_token = tokens['next_sync_token']
+
+    response = requests.get(uri, headers={'Content-Type':'application/json'}, params={'access_token':access_token, 'syncToken':sync_token})
+
+    if response.status_code == 200:
+
+        newEvents = response.json()
+        print "newEvents: ", newEvents
+
+        if 'nextSyncToken' in newEvents:
+            next_sync_token = newEvents['nextSyncToken']
+            print "next_sync_token: ", next_sync_token
+
+            cur.execute(saveNextSyncToken, {'next_sync_token':next_sync_token, 'resource_uri':uri, 'resource_uuid':uuid, 'resource_id':resource_id})
+            conn.commit()
+            print "next_sync_token saved."
+
+    else:
+
+        print response
+        print "headers: ", response.headers
+        print "json: ", response.json()
 
 
 @csrf_exempt
@@ -428,16 +470,13 @@ def receiveGcal(request):
         print "googleMessageNumber: ", googleMessageNumber
     except:
         print "error parsing Google Resources..."
+        googleResourceState = 'fail'
 
     if googleResourceState == 'sync':
-        getCalendars('hi')
-        #getEvent(googleResourceId)
-        #getAllEvents(googleResourceUri)
+        getAllEvents(googleResourceUri, googleChannelId, googleResourceId)
+
     elif googleResourceState == 'exists':
-        #print "incoming exists webhook..\nnot sure what to do..."
-        cur.execute(getAccessToken, {'resource_uri':googleResourceUri, 'resource_uuid':googleChannelId, 'resource_id':googleResourceId})
-        accessToken = cur.fetchone()[0]
-        getAllEvents(googleResourceUri, accessToken)
+        getNewEvents(googleResourceUri, googleChannelId, googleResourceId)
 
     return HttpResponse("OK")
 
