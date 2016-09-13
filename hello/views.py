@@ -377,7 +377,7 @@ def getEvent(event_id, uri, access_token):
     else:
         print response
         print "headers: ", response.headers
-        print "json: ", response.json()
+        print "body: ", response.body
 
 
 def getAllEvents(uri, uuid, resource_id):
@@ -438,7 +438,7 @@ def getNewEvents(uri, uuid, resource_id):
 
         print response
         print "headers: ", response.headers
-        print "text: ", response.text
+        print "body: ", response.body
 
 
 @csrf_exempt
