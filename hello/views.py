@@ -245,12 +245,23 @@ def authCalendar(request):
 
     return render(request, 'google-auth.html')
 
-    print "GCal Auth loaded with no problems."
-
 
 def authCalendarSuccess(request):
 
     print "got a good GCal auth coming back"
+
+    try:
+        print "GET: ", request.GET
+    except:
+        print "POST: ", request.POST
+
+    print "body: ", request.body
+
+    print "headers: ", request.META
+
+    ## exchange CODE for TOKEN
+    ## @ https://www.googleapis.com/oauth2/v4/token
+    ## info: https://developers.google.com/identity/protocols/OAuth2WebServer
 
     return render(request, 'google-auth-success.html')
 
