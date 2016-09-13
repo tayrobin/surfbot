@@ -38,6 +38,7 @@ cur = conn.cursor()
 updateAccessToken = """UPDATE google_calendar_access_tokens
                         SET access_token=%(access_token)s, updated_at=now(), refresh_token=%(refresh_token)s
                         WHERE id=1"""
+updateOnlyAccessToken = "UPDATE google_calendar_access_tokens SET access_token=%(access_token)s, updated_at=now() WHERE refresh_token=%(refresh_token)s"
 insertNewAccessToken = """INSERT INTO google_calendar_access_tokens (access_token, token_type, expires_in, created_at, updated_at, refresh_token)
                             VALUES (%(access_token)s, %(token_type)s, %(expires_in)s, now(), now(), %(refresh_token)s)"""
 updateUserData = """UPDATE google_calendar_access_tokens
@@ -445,16 +446,56 @@ def getNewEvents(uri, uuid, resource_id):
 
 
 @csrf_exempt
+def refreshAuthToken(access_token):
+
+    print "refreshing auth token"
+
+    refreshUrl = "https://www.googleapis.com/oauth2/v4/token" ## POST
+
+    ## get refresh token from server
+    selectRefreshToken = "SELECT refresh_token FROM google_calendar_access_tokens WHERE access_token=%(access_token)s"
+    cur.execute(selectRefreshToken, {'access_token':access_token})
+    data = cur.fetchone()
+    if data is not None and data[0] is not None:
+        refresh_token = data[0]
+    else:
+        print "error retrieving refresh_token from server for access_token: %s"%access_token
+        print "need the user to re-auth calendar access"
+        ## really I should be using a specific param to ask for new refresh_token as well..
+        ## set prompt=consent in the offline access step (https://developers.google.com/identity/protocols/OAuth2WebServer#refresh)
+        return render('google-auth.html')
+
+
+    response = requests.post(refreshUrl, data={'client_id':GCalClientId, 'client_secret':GCalClientSecret, 'refresh_token':refresh_token, 'grant_type':'refresh_token'})
+    if response.status_code == 200:
+        newData = reponse.json()
+        access_token = newData['access_token']
+        expires_in = newData['expires_in']
+        token_type = newData['token_type']
+
+        ## now update server
+        cur.execute(updateOnlyAccessToken, {'access_token':access_token, 'refresh_token':refresh_token})
+        conn.commit()
+        print "new access_token saved!"
+
+        return access_token
+
+    else:
+        print "error refreshing token"
+        print "headers: ", response.headers
+        print "text: ", response.text
+
+
+@csrf_exempt
 def catchNewGoogleUser(request):
 
     print "New Google User incoming"
 
     print request
-    inputs = request.body
+    inputs = json.loads(request.body)
     print "body: ", inputs
 
     ## now insert into users table
-    '''
     try:
         user_name = inputs['user_name']
     except:
@@ -467,10 +508,9 @@ def catchNewGoogleUser(request):
         email = inputs['email']
     except:
         email = None
-    '''
-    user_name = inputs['user_name']
-    image_url = inputs['image_url']
-    email = inputs['email']
+    #user_name = inputs['user_name']
+    #image_url = inputs['image_url']
+    #email = inputs['email']
 
     cur.execute(selectExistingUser, {'user_name':user_name, 'email':email})
     existingId = cur.fetchone()
