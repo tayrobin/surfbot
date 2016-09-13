@@ -268,7 +268,10 @@ def authCalendarSuccess(request):
     authData = response.json()
     print "response json: ", authData
 
-    refreshToken = authData['refresh_token']
+    try:
+        refreshToken = authData['refresh_token']
+    except:
+        refreshToken = None
     tokenType = authData['token_type']
     expiresIn = authData['expires_in']
     accessToken = authData['access_token']
