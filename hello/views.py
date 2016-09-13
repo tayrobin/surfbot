@@ -246,22 +246,37 @@ def authCalendar(request):
     return render(request, 'google-auth.html')
 
 
+def catchToken2(request):
+
+    print "catchToken2"
+
+    try:
+        print request.GET
+    except:
+        print request.POST
+
+    return HttpResponse(status=200)
+
+
 def authCalendarSuccess(request):
 
     print "got a good GCal auth coming back"
 
-    try:
-        print "GET: ", request.GET
-    except:
-        print "POST: ", request.POST
-
+    inputs = dict(request.GET)
+    print "inputs: ", inputs
     print "body: ", request.body
+    #print "headers: ", request.META
 
-    print "headers: ", request.META
+    tempCode = inputs['code'][0]
 
     ## exchange CODE for TOKEN
-    ## @ https://www.googleapis.com/oauth2/v4/token
+    exchangeCodeForToken = "https://www.googleapis.com/oauth2/v4/token"
     ## info: https://developers.google.com/identity/protocols/OAuth2WebServer
+
+    response = requests.post(exchangeCodeForToken, data={'code':tempCode, 'client_id':GCalClientId, 'client_secret':GCalClientSecret, 'redirect_uri':'https://surfy-surfbot.herokuapp.com/catchtoken2', 'grant_type':'authorization_code'})
+    print response
+    print "response headers: ",response.headers
+    print "response json: ", response.json()
 
     return render(request, 'google-auth-success.html')
 
@@ -342,6 +357,7 @@ def getEvent(event_id):
     response = requests.get(eventUrl, headers={'Content-Type': 'application/json'}, params={'access_token':access_token})
     response = response.json()
     print "response: ", response
+
 
 def getAllEvents(uri):
 
