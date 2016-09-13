@@ -50,7 +50,7 @@ getAccessTokenAndSyncToken = """SELECT access_token, next_sync_token
                                 FROM google_calendar_access_tokens
                                 WHERE resource_uri=%(resource_uri)s AND resource_uuid=%(resource_uuid)s AND resource_id=%(resource_id)s"""
 saveNextSyncToken = """UPDATE google_calendar_access_tokens
-                        SET next_sync_token=%(next_sync_token)s
+                        SET next_sync_token=%(next_sync_token)s, updated_at=now()
                         WHERE resource_uri=%(resource_uri)s AND resource_uuid=%(resource_uuid)s AND resource_id=%(resource_id)s"""
 
 # Create your views here.
