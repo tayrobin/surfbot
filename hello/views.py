@@ -450,7 +450,7 @@ def catchNewGoogleUser(request):
     print "New Google User incoming"
 
     print request
-    inputs = dict(request.body)
+    inputs = request.body
     print "body: ", inputs
 
     ## now insert into users table
