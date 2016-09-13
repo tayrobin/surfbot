@@ -443,6 +443,21 @@ def getNewEvents(uri, uuid, resource_id):
 
 
 @csrf_exempt
+def catchNewGoogleUser(request):
+
+    print "New Google User incoming"
+
+    inputs = dict(request.POST)
+    print "inputs: ", inputs
+    print "headers: ", request.META
+
+    ## now insert into users table
+    ## and redirect user to GCal auth page
+
+    return HttpResponse("OK")
+
+
+@csrf_exempt
 def receiveGcal(request):
 
     print "receiving GCal ping now!"
