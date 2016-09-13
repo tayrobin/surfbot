@@ -454,6 +454,7 @@ def catchNewGoogleUser(request):
     print "body: ", inputs
 
     ## now insert into users table
+    '''
     try:
         user_name = inputs['user_name']
     except:
@@ -466,6 +467,10 @@ def catchNewGoogleUser(request):
         email = inputs['email']
     except:
         email = None
+    '''
+    user_name = inputs['user_name']
+    image_url = inputs['image_url']
+    email = inputs['email']
 
     cur.execute(selectExistingUser, {'user_name':user_name, 'email':email})
     existingId = cur.fetchone()
