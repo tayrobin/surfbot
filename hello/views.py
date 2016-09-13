@@ -430,7 +430,8 @@ def getNewEvents(uri, uuid, resource_id):
             for event in newEvents['items']:
                 eventId = event['id']
                 if event['kind'] == 'calendar#event':
-                    getEvent(eventId, uri, access_token)
+                    #getEvent(eventId, uri, access_token)
+                    pass
         else:
             print "no new events"
 
