@@ -274,7 +274,7 @@ def authCalendarSuccess(request):
     exchangeCodeForToken = "https://www.googleapis.com/oauth2/v4/token"
     ## info: https://developers.google.com/identity/protocols/OAuth2WebServer
 
-    response = requests.post(exchangeCodeForToken, data={'code':tempCode, 'client_id':GCalClientId, 'client_secret':GCalClientSecret, 'redirect_uri':'https://surfy-surfbot.herokuapp.com/auth-calendar-success', 'grant_type':'authorization_code'})
+    response = requests.post(exchangeCodeForToken, data={'code':tempCode, 'client_id':GCalClientId, 'client_secret':GCalClientSecret, 'redirect_uri':'https://surfy-surfbot.herokuapp.com/auth-cal-success', 'grant_type':'authorization_code'})
     print response
     print "response headers: ",response.headers
     print "response json: ", response.json()
