@@ -36,7 +36,7 @@ print "connected to appbackr DB"
 cur = conn.cursor()
 
 updateAccessToken = """UPDATE google_calendar_access_tokens
-                        SET access_token=%(access_token)s, updated_at=now()
+                        SET access_token=%(access_token)s, updated_at=now(), refresh_token=%(refresh_token)s
                         WHERE id=1"""
 getAccessToken = """SELECT access_token
                     FROM google_calendar_access_tokens
@@ -247,18 +247,6 @@ def authCalendar(request):
     return render(request, 'google-auth.html')
 
 
-def catchToken2(request):
-
-    print "catchToken2"
-
-    try:
-        print request.GET
-    except:
-        print request.POST
-
-    return HttpResponse(status=200)
-
-
 def authCalendarSuccess(request):
 
     print "got a good GCal auth coming back"
@@ -277,11 +265,41 @@ def authCalendarSuccess(request):
     response = requests.post(exchangeCodeForToken, data={'code':tempCode, 'client_id':GCalClientId, 'client_secret':GCalClientSecret, 'redirect_uri':'https://surfy-surfbot.herokuapp.com/auth-cal-success', 'grant_type':'authorization_code'})
     print response
     print "response headers: ",response.headers
-    print "response json: ", response.json()
+    authData = response.json()
+    print "response json: ", authData
 
-    return render(request, 'google-auth-success.html')
+    refreshToken = authData['refresh_token']
+    tokenType = authData['token_type']
+    expiresIn = authData['expires_in']
+    accessToken = authData['access_token']
+
+    ## log to server for later use
+    cur.execute(updateAccessToken, {'access_token':accessToken, 'refresh_token':refreshToken})
+    conn.commit()
+    print "New access token successfully stored!"
+
+    print "calling watch calendar method"
+    askWatchCalendar()
+
+    return render(request, 'google-auth.html')
 
 
+def askWatchCalendar():
+
+    print "asking for permission to watch calendar"
+
+    cur.execute(getAccessToken,)
+    access_token = cur.fetchone()[0]
+    print "access_token: ", access_token
+
+    response = requests.post("https://www.googleapis.com/calendar/v3/calendars/taylor@appbackr.com/events/watch",
+                                headers={'Authorization':'Bearer '+access_token, 'Content-Type': 'application/json'},
+                                data=json.dumps({'id':str(uuid.uuid4()), 'type':'web_hook', 'address':'https://surfy-surfbot.herokuapp.com/receive-gcal'}))
+    print response
+    print response.json()
+
+
+'''
 def catchToken(request):
 
     print "Receiving successful GCal Auth callback"
@@ -324,7 +342,7 @@ def catchToken(request):
     print response.json()
 
     return render(request, 'successful-google-auth.html')
-
+'''
 
 def getCalendars():
 
