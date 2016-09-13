@@ -41,7 +41,7 @@ updateAccessToken = """UPDATE google_calendar_access_tokens
 insertNewAccessToken = """INSERT INTO google_calendar_access_tokens (access_token, token_type, expires_in, created_at, updated_at, refresh_token)
                             VALUES (%(access_token)s, %(token_type)s, %(expires_in)s, now(), now(), %(refresh_token)s)"""
 updateUserData = """UPDATE google_calendar_access_tokens
-                    SET primary_calendar=%(primary_calendar)s, updated_at=now(), resource_uri=%(resource_uri)s
+                    SET primary_calendar=%(primary_calendar)s, updated_at=now(), resource_uri=%(resource_uri)s, resource_id=%(resource_id)s, resource_uuid=%(resource_uuid)s
                     WHERE access_token=%(access_token)s"""
 getAccessToken = """SELECT access_token
                     FROM google_calendar_access_tokens
@@ -292,10 +292,10 @@ def authCalendarSuccess(request):
 
     if calendar is not None:
 
-        success, resource_uri = askWatchCalendar(calendar, accessToken)
+        success, resource_uri, resource_id, resource_uuid = askWatchCalendar(calendar, accessToken)
 
         if success:
-            cur.execute(updateUserData, {'primary_calendar':calendar, 'resource_uri':resource_uri, 'access_token':accessToken})
+            cur.execute(updateUserData, {'primary_calendar':calendar, 'resource_uri':resource_uri, 'access_token':accessToken, 'resource_id':resource_id, 'resource_uuid':resource_uuid})
             conn.commit()
             return HttpResponse('%s is now being watched!'%calendar)
         else:
@@ -323,8 +323,10 @@ def askWatchCalendar(calendar, access_token):
     if response.status_code == 200:
 
         resource_uri = watchData['resourceUri']
+        resource_id = watchData['resourceId']
+        resource_uuid = watchData['id']
 
-        return True, resource_uri
+        return True, resource_uri, resource_id, resource_uuid
     else:
         return False
 
