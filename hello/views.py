@@ -363,23 +363,21 @@ def getCalendars(access_token):
     return None
 
 
-def getEvent(event_id):
+def getEvent(event_id, uri, access_token):
 
     print "Fetching Calendar Event for user"
 
-    cur.execute(getAccessToken,)
-    access_token = cur.fetchone()[0]
-    print "access_token: ", access_token
+    eventUrl = uri.strip('?alt=json')+"/"+event_id
 
-    calendarId = "taylor@appbackr.com"
-    eventId = event_id
-
-    eventUrl = "https://www.googleapis.com/calendar/v3/calendars/"+calendarId+"/events/"+eventId ## GET
-
-    #response = requests.get(eventUrl, headers={'Authorization':'OAuth '+access_token, 'Content-Type': 'application/json'}, params={'access_token':access_token, 'key':google_api_key})
     response = requests.get(eventUrl, headers={'Content-Type': 'application/json'}, params={'access_token':access_token})
-    response = response.json()
-    print "response: ", response
+
+    if response.status_code == 200:
+        eventDetails = response.json()
+        print "eventDetails: ", eventDetails
+    else:
+        print response
+        print "headers: ", response.headers
+        print "json: ", response.json()
 
 
 def getAllEvents(uri, uuid, resource_id):
@@ -401,7 +399,6 @@ def getAllEvents(uri, uuid, resource_id):
         cur.execute(saveNextSyncToken, {'next_sync_token':next_sync_token, 'resource_uri':uri, 'resource_uuid':uuid, 'resource_id':resource_id})
         conn.commit()
         print "next_sync_token saved."
-
 
 
 def getNewEvents(uri, uuid, resource_id):
@@ -428,6 +425,14 @@ def getNewEvents(uri, uuid, resource_id):
             cur.execute(saveNextSyncToken, {'next_sync_token':next_sync_token, 'resource_uri':uri, 'resource_uuid':uuid, 'resource_id':resource_id})
             conn.commit()
             print "next_sync_token saved."
+
+        if 'items' in newEvents and newEvents['items'] != []:
+            for event in newEvents['items']:
+                eventId = event['id']
+                if event['kind'] == 'calendar#event':
+                    getEvent(eventId, uri, access_token)
+        else:
+            print "no new events"
 
     else:
 
