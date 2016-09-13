@@ -411,8 +411,8 @@ def getNewEvents(uri, uuid, resource_id):
     # access_token, sync_token needed
     cur.execute(getAccessTokenAndSyncToken, {'resource_uri':uri, 'resource_uuid':uuid, 'resource_id':resource_id})
     tokens = cur.fetchone()
-    access_token = tokens['access_token']
-    sync_token = tokens['next_sync_token']
+    access_token = tokens[0]
+    sync_token = tokens[1]
 
     response = requests.get(uri, headers={'Content-Type':'application/json'}, params={'access_token':access_token, 'syncToken':sync_token})
 
