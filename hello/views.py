@@ -550,11 +550,10 @@ def catchNewGoogleUser(request):
         cur.execute(insertNewUser, {'user_name':user_name, 'image_url':image_url, 'email':email})
         conn.commit()
         print "new User submitted"
+        return JsonResponse({'new_user':True})
     else:
         print "I already have this User logged as: %s"%existingId
-
-    ## and redirect user to GCal auth page
-    return render(request, 'google-auth.html')
+        return JsonResponse({'new_user':False})
 
 
 @csrf_exempt
