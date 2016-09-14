@@ -8,28 +8,43 @@
     <script>
         function onSignIn(googleUser) {
             var profile = googleUser.getBasicProfile();
-            console.log('ID: ' + profile.getId()); // Do not send to your backend! Use an ID token instead.
-            console.log('Name: ' + profile.getName());
-            console.log('Image URL: ' + profile.getImageUrl());
-            console.log('Email: ' + profile.getEmail());
+            var user_name = profile.getName();
+            var email = profile.getEmail();
+            var image_url = profile.getImageUrl();
+
+            console.log('Name: ' + user_name);
+            console.log('Image URL: ' + image_url);
+            console.log('Email: ' + email);
 
             // Send user details to my server
             var url = "https://surfy-surfbot.herokuapp.com/catchNewGoogleUser"
             var req = new XMLHttpRequest();
             var params = JSON.stringify({
-                'user_name': profile.getName(),
-                'image_url': profile.getImageUrl(),
-                'email': profile.getEmail()
+                'user_name': user_name,
+                'image_url': image_url,
+                'email': email
             })
             req.open('POST', url);
 
             req.setRequestHeader('Content-Type', 'application/json; charset=utf-8');
-            req.setRequestHeader('Content-length', params.length);
-            req.setRequestHeader('Connection', 'close');
+            //req.setRequestHeader('Content-length', params.length);
+            //req.setRequestHeader('Connection', 'close');
 
             req.onload = function() {
                 if (req.status == 200) {
                     console.log(req.response);
+
+                    var profile_pic = document.getElementsByClassName("prof-pic")[0];
+                    profile_pic.src = image_url;
+
+                    var doc_user_name = document.getElementsByClassName("user-name")[0];
+                    doc_user_name.innerHTML = user_name;
+
+                    var doc_email = document.getElementsByClassName("user-email")[0];
+                    doc_email.innerHTML = email;
+
+                    var doc_continue_link = document.getElementsByClassName("continue-link")[0];
+                    doc_continue_link.innerHTML = "To continue, <a href='https://surfy-surfbot.herokuapp.com/auth-calendar'>click here</a>"
                 } else {
                     console.log(req.status);
                     console.log(req.response);
@@ -51,7 +66,13 @@
 <body>
     <h1>Sign up for Surfy Surfbot with Google</h1>
     <div class="g-signin2" data-onsuccess="onSignIn"></div>
-    <p>Or, if you want, you can <a href="#" onclick="signOut();">Sign out</a></p>
+    <div class="user-info">
+      <img class="prof-pic" src="" height="55" width="55">
+      <p class="user-name"></p>
+      <p class="user-email"></p>
+      <p class="continue-link"></p>
+    </div>
+    <p><br>Or, if you want, you can <a href="#" onclick="signOut();">Sign out</a></p>
 
 
     {% block content %}{% endblock %}

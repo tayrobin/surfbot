@@ -411,8 +411,12 @@ def getNewEvents(uri, uuid, resource_id):
     # access_token, sync_token needed
     cur.execute(getAccessTokenAndSyncToken, {'resource_uri':uri, 'resource_uuid':uuid, 'resource_id':resource_id})
     tokens = cur.fetchone()
-    access_token = tokens[0]
-    sync_token = tokens[1]
+    if tokens is not None:
+        access_token = tokens[0]
+        sync_token = tokens[1]
+    else:
+        print "unable to grab access_token and sync_token from database... have I seen this user before?"
+        return
 
     response = requests.get(uri, headers={'Content-Type':'application/json'}, params={'access_token':access_token, 'syncToken':sync_token})
 
@@ -437,7 +441,34 @@ def getNewEvents(uri, uuid, resource_id):
                     pass
         else:
             print "no new events"
+    elif response.status_code == 401:
+        print "outdated access_token\nCalling refresh method"
+        access_token = refreshAuthToken(access_token)
+        response = requests.get(uri, headers={'Content-Type':'application/json'}, params={'access_token':access_token, 'syncToken':sync_token})
+        if response.status_code == 200:
+            newEvents = response.json()
+            print "newEvents: ", newEvents
 
+            if 'nextSyncToken' in newEvents:
+                next_sync_token = newEvents['nextSyncToken']
+                print "next_sync_token: ", next_sync_token
+
+                cur.execute(saveNextSyncToken, {'next_sync_token':next_sync_token, 'resource_uri':uri, 'resource_uuid':uuid, 'resource_id':resource_id})
+                conn.commit()
+                print "next_sync_token saved."
+
+            if 'items' in newEvents and newEvents['items'] != []:
+                for event in newEvents['items']:
+                    eventId = event['id']
+                    if event['kind'] == 'calendar#event':
+                        #getEvent(eventId, uri, access_token)
+                        pass
+                    else:
+                        print "no new events"
+        else:
+            print "still have invalid auth token .. giving up"
+            print "headers: ", response.headers
+            print "text: ", response.text
     else:
 
         print response
