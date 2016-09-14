@@ -45,6 +45,8 @@
 
                     var profile_pic = document.getElementsByClassName("prof-pic")[0];
                     profile_pic.src = image_url;
+                    profile_pic.height = "55";
+                    profile_pic.width = "55";
 
                     var doc_user_name = document.getElementsByClassName("user-name")[0];
                     doc_user_name.innerHTML = user_name;
@@ -77,7 +79,7 @@
     <div class="g-signin2" data-onsuccess="onSignIn"></div>
     <div class="user-info">
       <p class="welcome-banner"></p>
-      <img class="prof-pic" src="" height="55" width="55">
+      <img class="prof-pic" src="">
       <p class="user-name"></p>
       <p class="user-email"></p>
       <p class="continue-link"></p>
