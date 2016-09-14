@@ -38,9 +38,9 @@
 
                     var doc_welcome_banner = document.getElementsByClassName("welcome-banner")[0];
                     if (response_data['new_user']) {
-                      doc_welcome_banner.innerHTML = "Welcome, new User!"
+                        doc_welcome_banner.innerHTML = "Welcome, new User!"
                     } else {
-                      doc_welcome_banner.innerHTML = "Welcome back, existing User!"
+                        doc_welcome_banner.innerHTML = "Welcome back, existing User!"
                     }
 
                     var profile_pic = document.getElementsByClassName("prof-pic")[0];
@@ -78,11 +78,11 @@
     <h1>Sign up for Surfy Surfbot with Google</h1>
     <div class="g-signin2" data-onsuccess="onSignIn"></div>
     <div class="user-info">
-      <p class="welcome-banner"></p>
-      <img class="prof-pic" src="">
-      <p class="user-name"></p>
-      <p class="user-email"></p>
-      <p class="continue-link"></p>
+        <p class="welcome-banner"></p>
+        <img class="prof-pic" src="">
+        <p class="user-name"></p>
+        <p class="user-email"></p>
+        <p class="continue-link"></p>
     </div>
     <p><br>Or, if you want, you can <a href="#" onclick="signOut();">Sign out</a></p>
 

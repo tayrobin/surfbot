@@ -2,10 +2,59 @@
 
 <head>
     <title>Auth Surfbot with GCal</title>
+    <script src="https://apis.google.com/js/platform.js" async defer></script>
+    <meta name="google-signin-client_id" content="622551880865-2317scnfirngmsncanm491ie8fsbb5r3.apps.googleusercontent.com">
+    <script>
+        function onSignIn(googleUser) {
+            var profile = googleUser.getBasicProfile();
+            var user_name = profile.getName();
+            var email = profile.getEmail();
+            var image_url = profile.getImageUrl();
+
+            console.log('Name: ' + user_name);
+            console.log('Image URL: ' + image_url);
+            console.log('Email: ' + email);
+
+            // Send user details to my server
+            var url = "https://surfy-surfbot.herokuapp.com/catchNewGoogleUser"
+            var req = new XMLHttpRequest();
+            var params = JSON.stringify({
+                'user_name': user_name,
+                'image_url': image_url,
+                'email': email
+            })
+            req.open('POST', url);
+
+            req.setRequestHeader('Content-Type', 'application/json; charset=utf-8');
+
+            req.onload = function() {
+                if (req.status == 200) {
+                    console.log(req.response);
+                    var response_data = JSON.parse(req.response);
+                    console.log(response_data);
+
+                    var doc_welcome_banner = document.getElementsByClassName("welcome-banner")[0];
+                    if (response_data['new_user']) {
+                        doc_welcome_banner.innerHTML = "Welcome, new User!"
+                    } else {
+                        doc_welcome_banner.innerHTML = "Welcome back, existing User!"
+                    }
+
+                } else {
+                    console.log(req.status);
+                    console.log(req.response);
+                }
+            };
+
+            req.send(params);
+        }
+
+    </script>
 </head>
 
 <body>
     <h1>Please click below to allow us access to your Google Calendar account.</h1>
+    <p class="welcome-banner"></p>
     <p><a href="https://accounts.google.com/o/oauth2/auth?scope=https://www.googleapis.com/auth/calendar.readonly&client_id=622551880865-2317scnfirngmsncanm491ie8fsbb5r3.apps.googleusercontent.com&redirect_uri=https://surfy-surfbot.herokuapp.com/auth-cal-success&response_type=code&access_type=offline">Click here to give us permission on Google</a></p>
 </body>
 
