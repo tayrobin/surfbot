@@ -499,7 +499,7 @@ def refreshAuthToken(access_token):
 
     response = requests.post(refreshUrl, data={'client_id':GCalClientId, 'client_secret':GCalClientSecret, 'refresh_token':refresh_token, 'grant_type':'refresh_token'})
     if response.status_code == 200:
-        newData = reponse.json()
+        newData = response.json()
         access_token = newData['access_token']
         expires_in = newData['expires_in']
         token_type = newData['token_type']
