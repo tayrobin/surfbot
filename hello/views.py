@@ -22,6 +22,9 @@ GCalClientSecret = os.environ["GCAL_CLIENT_SECRET"]
 google_api_key = os.environ['GCAL_API_KEY']
 access_token = os.environ['GCAL_ACCESS_TOKEN_TAYLOR']
 
+## URL for pinging myself in Slack
+mySlackWebhookUrl = os.environ['SLACK_WEBHOOK_URL']
+
 ## connect to appbackr's database
 urlparse.uses_netloc.append("postgres")
 url = urlparse.urlparse(os.environ["APPBACKR_DB_URL"])
@@ -598,6 +601,12 @@ def receiveGcal(request):
 
     elif googleResourceState == 'exists':
         getNewEvents(googleResourceUri, googleChannelId, googleResourceId)
+
+    ## ping myself in Slack
+    response = requests.post(mySlackWebhookUrl, data=json.dumps({'text':'you have a new Calendar event!', 'channel':'@taylor'}))
+    if response.status_code != 200:
+        print response
+        print "data:", response.json()
 
     return HttpResponse("OK")
 
