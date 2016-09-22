@@ -647,7 +647,7 @@ def receiveGcal(request):
 																	"channel":"#mememememmee",
 																	"token":slackTestToken
 																}),
-																headers={"Content-Type":"application/json})
+																headers={"Content-Type":"application/json"})
 		#if response.status_code != 200:
 		print response
 		print "data:", response.json()
