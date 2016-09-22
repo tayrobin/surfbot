@@ -29,33 +29,33 @@ mySlackWebhookUrl = os.environ['SLACK_WEBHOOK_URL']
 urlparse.uses_netloc.append("postgres")
 url = urlparse.urlparse(os.environ["APPBACKR_DB_URL"])
 conn = psycopg2.connect(
-    database=url.path[1:],
-    user=url.username,
-    password=url.password,
-    host=url.hostname,
-    port=url.port
+	database=url.path[1:],
+	user=url.username,
+	password=url.password,
+	host=url.hostname,
+	port=url.port
 )
 print "connected to appbackr DB"
 cur = conn.cursor()
 
 updateAccessToken = """UPDATE google_calendar_access_tokens
-                        SET access_token=%(access_token)s, updated_at=now(), refresh_token=%(refresh_token)s
-                        WHERE id=1"""
+						SET access_token=%(access_token)s, updated_at=now(), refresh_token=%(refresh_token)s
+						WHERE id=1"""
 updateOnlyAccessToken = "UPDATE google_calendar_access_tokens SET access_token=%(access_token)s, updated_at=now() WHERE refresh_token=%(refresh_token)s"
 insertNewAccessToken = """INSERT INTO google_calendar_access_tokens (access_token, token_type, expires_in, created_at, updated_at, refresh_token)
-                            VALUES (%(access_token)s, %(token_type)s, %(expires_in)s, now(), now(), %(refresh_token)s)"""
+							VALUES (%(access_token)s, %(token_type)s, %(expires_in)s, now(), now(), %(refresh_token)s)"""
 updateUserData = """UPDATE google_calendar_access_tokens
-                    SET primary_calendar=%(primary_calendar)s, updated_at=now(), resource_uri=%(resource_uri)s, resource_id=%(resource_id)s, resource_uuid=%(resource_uuid)s
-                    WHERE access_token=%(access_token)s"""
+					SET primary_calendar=%(primary_calendar)s, updated_at=now(), resource_uri=%(resource_uri)s, resource_id=%(resource_id)s, resource_uuid=%(resource_uuid)s
+					WHERE access_token=%(access_token)s"""
 getAccessToken = """SELECT access_token
-                    FROM google_calendar_access_tokens
-                    WHERE resource_uri=%(resource_uri)s AND resource_uuid=%(resource_uuid)s AND resource_id=%(resource_id)s"""
+					FROM google_calendar_access_tokens
+					WHERE resource_uri=%(resource_uri)s AND resource_uuid=%(resource_uuid)s AND resource_id=%(resource_id)s"""
 getAccessTokenAndSyncToken = """SELECT access_token, next_sync_token
-                                FROM google_calendar_access_tokens
-                                WHERE resource_uri=%(resource_uri)s AND resource_uuid=%(resource_uuid)s AND resource_id=%(resource_id)s"""
+								FROM google_calendar_access_tokens
+								WHERE resource_uri=%(resource_uri)s AND resource_uuid=%(resource_uuid)s AND resource_id=%(resource_id)s"""
 saveNextSyncToken = """UPDATE google_calendar_access_tokens
-                        SET next_sync_token=%(next_sync_token)s, updated_at=now()
-                        WHERE resource_uri=%(resource_uri)s AND resource_uuid=%(resource_uuid)s AND resource_id=%(resource_id)s"""
+						SET next_sync_token=%(next_sync_token)s, updated_at=now()
+						WHERE resource_uri=%(resource_uri)s AND resource_uuid=%(resource_uuid)s AND resource_id=%(resource_id)s"""
 insertNewUser = """INSERT INTO google_calendar_users (user_name, image_url, email) VALUES (%(user_name)s, %(image_url)s, %(email)s)"""
 selectExistingUser = "SELECT id FROM google_calendar_users WHERE user_name=%(user_name)s AND email=%(email)s"
 
@@ -252,363 +252,401 @@ def index(request):
 
 def authCalendar(request):
 
-    print "Loading GCal Auth page."
+	print "Loading GCal Auth page."
 
-    print request
+	print request
 
-    if request.method == "GET":
-        print request.GET
-    else:
-        print request.POST
+	if request.method == "GET":
+		print request.GET
+	else:
+		print request.POST
 
-    return render(request, 'google-auth.html')
+	return render(request, 'google-auth.html')
 
 
 def authCalendarSuccess(request):
 
-    print "got a good GCal auth coming back"
+	print "got a good GCal auth coming back"
 
-    inputs = dict(request.GET)
-    print "inputs: ", inputs
-    print "body: ", request.body
-    #print "headers: ", request.META
+	inputs = dict(request.GET)
+	print "inputs: ", inputs
+	print "body: ", request.body
+	#print "headers: ", request.META
 
-    tempCode = inputs['code'][0]
+	tempCode = inputs['code'][0]
 
-    ## exchange CODE for TOKEN
-    exchangeCodeForToken = "https://www.googleapis.com/oauth2/v4/token"
-    ## info: https://developers.google.com/identity/protocols/OAuth2WebServer
+	## exchange CODE for TOKEN
+	exchangeCodeForToken = "https://www.googleapis.com/oauth2/v4/token"
+	## info: https://developers.google.com/identity/protocols/OAuth2WebServer
 
-    response = requests.post(exchangeCodeForToken, data={'code':tempCode, 'client_id':GCalClientId, 'client_secret':GCalClientSecret, 'redirect_uri':'https://surfy-surfbot.herokuapp.com/auth-cal-success', 'grant_type':'authorization_code'})
-    print response
-    print "response headers: ",response.headers
-    authData = response.json()
-    print "response json: ", authData
+	response = requests.post(exchangeCodeForToken, data={'code':tempCode, 'client_id':GCalClientId, 'client_secret':GCalClientSecret, 'redirect_uri':'https://surfy-surfbot.herokuapp.com/auth-cal-success', 'grant_type':'authorization_code'})
+	print response
+	print "response headers: ",response.headers
+	authData = response.json()
+	print "response json: ", authData
 
-    try:
-        refreshToken = authData['refresh_token']
-    except:
-        refreshToken = None
-    tokenType = authData['token_type']
-    expiresIn = authData['expires_in']
-    accessToken = authData['access_token']
+	try:
+		refreshToken = authData['refresh_token']
+	except:
+		refreshToken = None
+	tokenType = authData['token_type']
+	expiresIn = authData['expires_in']
+	accessToken = authData['access_token']
 
-    ## log to server for later use
-    cur.execute(insertNewAccessToken, {'access_token':accessToken, 'refresh_token':refreshToken, 'token_type':tokenType, 'expires_in':expiresIn})
-    conn.commit()
-    print "New access token successfully stored!"
+	## log to server for later use
+	cur.execute(insertNewAccessToken, {'access_token':accessToken, 'refresh_token':refreshToken, 'token_type':tokenType, 'expires_in':expiresIn})
+	conn.commit()
+	print "New access token successfully stored!"
 
-    print "calling watch calendar method"
+	print "calling watch calendar method"
 
-    calendar = getCalendars(accessToken)
+	calendar = getCalendars(accessToken)
 
-    if calendar is not None:
+	if calendar is not None:
 
-        success, resource_uri, resource_id, resource_uuid = askWatchCalendar(calendar, accessToken)
+		success, resource_uri, resource_id, resource_uuid = askWatchCalendar(calendar, accessToken)
 
-        if success:
-            cur.execute(updateUserData, {'primary_calendar':calendar, 'resource_uri':resource_uri, 'access_token':accessToken, 'resource_id':resource_id, 'resource_uuid':resource_uuid})
-            conn.commit()
-            return HttpResponse('%s is now being watched!'%calendar)
-        else:
-            return HttpResponse('There seems to have been an error... Please try again.')
+		if success:
+			cur.execute(updateUserData, {'primary_calendar':calendar, 'resource_uri':resource_uri, 'access_token':accessToken, 'resource_id':resource_id, 'resource_uuid':resource_uuid})
+			conn.commit()
+			return HttpResponse('%s is now being watched!'%calendar)
+		else:
+			return HttpResponse('There seems to have been an error... Please try again.')
 
-    else:
-        return HttpResponse('Failed to find the primary calendar for this user...')
+	else:
+		return HttpResponse('Failed to find the primary calendar for this user...')
 
 
 def askWatchCalendar(calendar, access_token):
 
-    print "asking for permission to watch calendar"
+	print "asking for permission to watch calendar"
 
-    #cur.execute(getAccessToken,)
-    #access_token = cur.fetchone()[0]
-    #print "access_token: ", access_token
+	#cur.execute(getAccessToken,)
+	#access_token = cur.fetchone()[0]
+	#print "access_token: ", access_token
 
-    response = requests.post("https://www.googleapis.com/calendar/v3/calendars/"+calendar+"/events/watch",
-                                headers={'Authorization':'Bearer '+access_token, 'Content-Type': 'application/json'},
-                                data=json.dumps({'id':str(uuid.uuid4()), 'type':'web_hook', 'address':'https://surfy-surfbot.herokuapp.com/receive-gcal'}))
-    print response
-    watchData = response.json()
-    print "watchData: ", watchData
+	response = requests.post("https://www.googleapis.com/calendar/v3/calendars/"+calendar+"/events/watch",
+								headers={'Authorization':'Bearer '+access_token, 'Content-Type': 'application/json'},
+								data=json.dumps({'id':str(uuid.uuid4()), 'type':'web_hook', 'address':'https://surfy-surfbot.herokuapp.com/receive-gcal'}))
+	print response
+	watchData = response.json()
+	print "watchData: ", watchData
 
-    if response.status_code == 200:
+	if response.status_code == 200:
 
-        resource_uri = watchData['resourceUri']
-        resource_id = watchData['resourceId']
-        resource_uuid = watchData['id']
+		resource_uri = watchData['resourceUri']
+		resource_id = watchData['resourceId']
+		resource_uuid = watchData['id']
 
-        return True, resource_uri, resource_id, resource_uuid
-    else:
-        return False
+		return True, resource_uri, resource_id, resource_uuid
+	else:
+		return False
 
 
 def getCalendars(access_token):
 
-    print "Fetching Calendars List for user"
+	print "Fetching Calendars List for user"
 
-    #cur.execute(getAccessToken,)
-    #access_token = cur.fetchone()[0]
-    #print "access_token: ", access_token
+	#cur.execute(getAccessToken,)
+	#access_token = cur.fetchone()[0]
+	#print "access_token: ", access_token
 
-    calendarListUrl = "https://www.googleapis.com/calendar/v3/users/me/calendarList" ## GET
+	calendarListUrl = "https://www.googleapis.com/calendar/v3/users/me/calendarList" ## GET
 
-    #response = requests.get(calendarListUrl, headers={'Authorization':'OAuth '+access_token, 'Content-Type': 'application/json'}, params={'access_token':access_token, 'key':google_api_key})
-    response = requests.get(calendarListUrl, headers={'Content-Type': 'application/json'}, params={'access_token':access_token})
-    if response.status_code == 200:
+	#response = requests.get(calendarListUrl, headers={'Authorization':'OAuth '+access_token, 'Content-Type': 'application/json'}, params={'access_token':access_token, 'key':google_api_key})
+	response = requests.get(calendarListUrl, headers={'Content-Type': 'application/json'}, params={'access_token':access_token})
+	if response.status_code == 200:
 
-        responseData = response.json()
-        print "response: ", responseData
+		responseData = response.json()
+		print "response: ", responseData
 
-        for calendar in responseData['items']:
+		for calendar in responseData['items']:
 
-            if 'primary' in calendar and calendar['primary'] == True:
+			if 'primary' in calendar and calendar['primary'] == True:
 
-                return calendar['id']
+				return calendar['id']
 
-    return None
+	return None
 
 
 def getEvent(event_id, uri, access_token):
 
-    print "Fetching Calendar Event for user"
+	print "Fetching Calendar Event for user"
 
-    eventUrl = uri.strip('?alt=json')+"/"+event_id
+	eventUrl = uri.strip('?alt=json')+"/"+event_id
 
-    response = requests.get(eventUrl, headers={'Content-Type': 'application/json'}, params={'access_token':access_token})
+	response = requests.get(eventUrl, headers={'Content-Type': 'application/json'}, params={'access_token':access_token})
 
-    if response.status_code == 200:
-        eventDetails = response.json()
-        print "eventDetails: ", eventDetails
-    else:
-        print response
-        print "headers: ", response.headers
-        print "text: ", response.text
+	if response.status_code == 200:
+		eventDetails = response.json()
+		print "eventDetails: ", eventDetails
+	else:
+		print response
+		print "headers: ", response.headers
+		print "text: ", response.text
 
 
 def getAllEvents(uri, uuid, resource_id):
 
-    print "Fetching all Calendar Events for user"
+	print "Fetching all Calendar Events for user"
 
-    cur.execute(getAccessToken, {'resource_uri':uri, 'resource_uuid':uuid, 'resource_id':resource_id})
-    access_token = cur.fetchone()[0]
+	cur.execute(getAccessToken, {'resource_uri':uri, 'resource_uuid':uuid, 'resource_id':resource_id})
+	access_token = cur.fetchone()[0]
 
-    response = requests.get(uri, headers={'Content-Type': 'application/json'}, params={'access_token':access_token, 'maxResults':10})
+	response = requests.get(uri, headers={'Content-Type': 'application/json'}, params={'access_token':access_token, 'maxResults':10})
 
-    if response.status_code == 200:
-        responseData = response.json()
-        print "response: ", responseData
+	if response.status_code == 200:
+		responseData = response.json()
+		print "response: ", responseData
 
-        next_sync_token = responseData['nextSyncToken']
-        print "next_sync_token: ", next_sync_token
+		next_sync_token = responseData['nextSyncToken']
+		print "next_sync_token: ", next_sync_token
 
-        cur.execute(saveNextSyncToken, {'next_sync_token':next_sync_token, 'resource_uri':uri, 'resource_uuid':uuid, 'resource_id':resource_id})
-        conn.commit()
-        print "next_sync_token saved."
+		cur.execute(saveNextSyncToken, {'next_sync_token':next_sync_token, 'resource_uri':uri, 'resource_uuid':uuid, 'resource_id':resource_id})
+		conn.commit()
+		print "next_sync_token saved."
 
 
 def getNewEvents(uri, uuid, resource_id):
 
-    print "Updating Events since last sync"
+	print "Updating Events since last sync"
 
-    # access_token, sync_token needed
-    cur.execute(getAccessTokenAndSyncToken, {'resource_uri':uri, 'resource_uuid':uuid, 'resource_id':resource_id})
-    tokens = cur.fetchone()
-    if tokens is not None:
-        access_token = tokens[0]
-        sync_token = tokens[1]
-    else:
-        print "unable to grab access_token and sync_token from database... have I seen this user before?"
-        return
+	# access_token, sync_token needed
+	cur.execute(getAccessTokenAndSyncToken, {'resource_uri':uri, 'resource_uuid':uuid, 'resource_id':resource_id})
+	tokens = cur.fetchone()
+	if tokens is not None:
+		access_token = tokens[0]
+		sync_token = tokens[1]
+	else:
+		print "unable to grab access_token and sync_token from database... have I seen this user before?"
+		return
 
-    response = requests.get(uri, headers={'Content-Type':'application/json'}, params={'access_token':access_token, 'syncToken':sync_token})
+	response = requests.get(uri, headers={'Content-Type':'application/json'}, params={'access_token':access_token, 'syncToken':sync_token})
 
-    if response.status_code == 200:
+	if response.status_code == 200:
 
-        newEvents = response.json()
-        print "newEvents: ", newEvents
+		newEvents = response.json()
+		print "newEvents: ", newEvents
 
-        if 'nextSyncToken' in newEvents:
-            next_sync_token = newEvents['nextSyncToken']
-            print "next_sync_token: ", next_sync_token
+		if 'nextSyncToken' in newEvents:
+			next_sync_token = newEvents['nextSyncToken']
+			print "next_sync_token: ", next_sync_token
 
-            cur.execute(saveNextSyncToken, {'next_sync_token':next_sync_token, 'resource_uri':uri, 'resource_uuid':uuid, 'resource_id':resource_id})
-            conn.commit()
-            print "next_sync_token saved."
+			cur.execute(saveNextSyncToken, {'next_sync_token':next_sync_token, 'resource_uri':uri, 'resource_uuid':uuid, 'resource_id':resource_id})
+			conn.commit()
+			print "next_sync_token saved."
 
-        if 'items' in newEvents and newEvents['items'] != []:
-            for event in newEvents['items']:
-                eventId = event['id']
-                if event['kind'] == 'calendar#event':
-                    #getEvent(eventId, uri, access_token)
-                    pass
-        else:
-            print "no new events"
-    elif response.status_code == 401:
-        print "outdated access_token\nCalling refresh method"
-        access_token = refreshAuthToken(access_token)
-        response = requests.get(uri, headers={'Content-Type':'application/json'}, params={'access_token':access_token, 'syncToken':sync_token})
-        if response.status_code == 200:
-            newEvents = response.json()
-            print "newEvents: ", newEvents
+		if 'items' in newEvents and newEvents['items'] != []:
+			for event in newEvents['items']:
+				eventId = event['id']
+				if event['kind'] == 'calendar#event':
+					#getEvent(eventId, uri, access_token)
+					pass
+		else:
+			print "no new events"
+	elif response.status_code == 401:
+		print "outdated access_token\nCalling refresh method"
+		access_token = refreshAuthToken(access_token)
+		response = requests.get(uri, headers={'Content-Type':'application/json'}, params={'access_token':access_token, 'syncToken':sync_token})
+		if response.status_code == 200:
+			newEvents = response.json()
+			print "newEvents: ", newEvents
 
-            if 'nextSyncToken' in newEvents:
-                next_sync_token = newEvents['nextSyncToken']
-                print "next_sync_token: ", next_sync_token
+			if 'nextSyncToken' in newEvents:
+				next_sync_token = newEvents['nextSyncToken']
+				print "next_sync_token: ", next_sync_token
 
-                cur.execute(saveNextSyncToken, {'next_sync_token':next_sync_token, 'resource_uri':uri, 'resource_uuid':uuid, 'resource_id':resource_id})
-                conn.commit()
-                print "next_sync_token saved."
+				cur.execute(saveNextSyncToken, {'next_sync_token':next_sync_token, 'resource_uri':uri, 'resource_uuid':uuid, 'resource_id':resource_id})
+				conn.commit()
+				print "next_sync_token saved."
 
-            if 'items' in newEvents and newEvents['items'] != []:
-                for event in newEvents['items']:
-                    eventId = event['id']
-                    if event['kind'] == 'calendar#event':
-                        #getEvent(eventId, uri, access_token)
-                        pass
-                    else:
-                        print "no new events"
-        else:
-            print "still have invalid auth token .. giving up"
-            print "headers: ", response.headers
-            print "text: ", response.text
-    else:
+			if 'items' in newEvents and newEvents['items'] != []:
+				for event in newEvents['items']:
+					eventId = event['id']
+					if event['kind'] == 'calendar#event':
+						#getEvent(eventId, uri, access_token)
+						pass
+					else:
+						print "no new events"
+		else:
+			print "still have invalid auth token .. giving up"
+			print "headers: ", response.headers
+			print "text: ", response.text
+	else:
 
-        print response
-        print "headers: ", response.headers
-        print "text: ", response.text
+		print response
+		print "headers: ", response.headers
+		print "text: ", response.text
 
 
 @csrf_exempt
 def refreshAuthToken(access_token):
 
-    print "refreshing auth token"
+	print "refreshing auth token"
 
-    refreshUrl = "https://www.googleapis.com/oauth2/v4/token" ## POST
+	refreshUrl = "https://www.googleapis.com/oauth2/v4/token" ## POST
 
-    ## get refresh token from server
-    selectRefreshToken = "SELECT refresh_token FROM google_calendar_access_tokens WHERE access_token=%(access_token)s"
-    cur.execute(selectRefreshToken, {'access_token':access_token})
-    data = cur.fetchone()
-    if data is not None and data[0] is not None:
-        refresh_token = data[0]
-    else:
-        print "error retrieving refresh_token from server for access_token: %s"%access_token
-        print "need the user to re-auth calendar access"
-        ## really I should be using a specific param to ask for new refresh_token as well..
-        ## set prompt=consent in the offline access step (https://developers.google.com/identity/protocols/OAuth2WebServer#refresh)
-        return render('google-auth.html')
+	## get refresh token from server
+	selectRefreshToken = "SELECT refresh_token FROM google_calendar_access_tokens WHERE access_token=%(access_token)s"
+	cur.execute(selectRefreshToken, {'access_token':access_token})
+	data = cur.fetchone()
+	if data is not None and data[0] is not None:
+		refresh_token = data[0]
+	else:
+		print "error retrieving refresh_token from server for access_token: %s"%access_token
+		print "need the user to re-auth calendar access"
+		## really I should be using a specific param to ask for new refresh_token as well..
+		## set prompt=consent in the offline access step (https://developers.google.com/identity/protocols/OAuth2WebServer#refresh)
+		return render('google-auth.html')
 
 
-    response = requests.post(refreshUrl, data={'client_id':GCalClientId, 'client_secret':GCalClientSecret, 'refresh_token':refresh_token, 'grant_type':'refresh_token'})
-    if response.status_code == 200:
-        newData = response.json()
-        access_token = newData['access_token']
-        expires_in = newData['expires_in']
-        token_type = newData['token_type']
+	response = requests.post(refreshUrl, data={'client_id':GCalClientId, 'client_secret':GCalClientSecret, 'refresh_token':refresh_token, 'grant_type':'refresh_token'})
+	if response.status_code == 200:
+		newData = response.json()
+		access_token = newData['access_token']
+		expires_in = newData['expires_in']
+		token_type = newData['token_type']
 
-        ## now update server
-        cur.execute(updateOnlyAccessToken, {'access_token':access_token, 'refresh_token':refresh_token})
-        conn.commit()
-        print "new access_token saved!"
+		## now update server
+		cur.execute(updateOnlyAccessToken, {'access_token':access_token, 'refresh_token':refresh_token})
+		conn.commit()
+		print "new access_token saved!"
 
-        return access_token
+		return access_token
 
-    else:
-        print "error refreshing token"
-        print "headers: ", response.headers
-        print "text: ", response.text
+	else:
+		print "error refreshing token"
+		print "headers: ", response.headers
+		print "text: ", response.text
 
 
 @csrf_exempt
 def catchNewGoogleUser(request):
 
-    print "New Google User incoming"
+	print "New Google User incoming"
 
-    print request
-    inputs = json.loads(request.body)
-    print "body: ", inputs
+	print request
+	inputs = json.loads(request.body)
+	print "body: ", inputs
 
-    ## now insert into users table
-    try:
-        user_name = inputs['user_name']
-    except:
-        user_name = None
-    try:
-        image_url = inputs['image_url']
-    except:
-        image_url = None
-    try:
-        email = inputs['email']
-    except:
-        email = None
-    #user_name = inputs['user_name']
-    #image_url = inputs['image_url']
-    #email = inputs['email']
+	## now insert into users table
+	try:
+		user_name = inputs['user_name']
+	except:
+		user_name = None
+	try:
+		image_url = inputs['image_url']
+	except:
+		image_url = None
+	try:
+		email = inputs['email']
+	except:
+		email = None
+	#user_name = inputs['user_name']
+	#image_url = inputs['image_url']
+	#email = inputs['email']
 
-    cur.execute(selectExistingUser, {'user_name':user_name, 'email':email})
-    existingId = cur.fetchone()
+	cur.execute(selectExistingUser, {'user_name':user_name, 'email':email})
+	existingId = cur.fetchone()
 
-    if existingId is None or existingId[0] is None:
-        cur.execute(insertNewUser, {'user_name':user_name, 'image_url':image_url, 'email':email})
-        conn.commit()
-        print "new User submitted"
-        return JsonResponse({'new_user':True})
-    else:
-        print "I already have this User logged as: %s"%existingId
-        return JsonResponse({'new_user':False})
+	if existingId is None or existingId[0] is None:
+		cur.execute(insertNewUser, {'user_name':user_name, 'image_url':image_url, 'email':email})
+		conn.commit()
+		print "new User submitted"
+		return JsonResponse({'new_user':True})
+	else:
+		print "I already have this User logged as: %s"%existingId
+		return JsonResponse({'new_user':False})
 
 
 @csrf_exempt
 def receiveGcal(request):
 
-    print "receiving GCal ping now!"
-    print request
-    if request.method == 'GET':
-        print request.GET
-    else:
-        print request.POST
+	print "receiving GCal ping now!"
+	print request
+	if request.method == 'GET':
+		print request.GET
+	else:
+		print request.POST
 
-    print "printing body text"
+	print "printing body text"
 
-    try:
-        print "body: ", request.body
-    except:
-        print "no request.body"
+	try:
+		print "body: ", request.body
+	except:
+		print "no request.body"
 
-    print "printing headers"
-    headers = request.META
-    print "headers: ", headers
+	print "printing headers"
+	headers = request.META
+	print "headers: ", headers
 
-    try:
-        googleResourceUri = headers['HTTP_X_GOOG_RESOURCE_URI']
-        print "googleResourceUri: ", googleResourceUri
-        googleResourceState = headers['HTTP_X_GOOG_RESOURCE_STATE']
-        print "googleResourceState: ", googleResourceState
-        googleResourceId = headers['HTTP_X_GOOG_RESOURCE_ID']
-        print "googleResourceId: ", googleResourceId
-        googleChannelId = headers['HTTP_X_GOOG_CHANNEL_ID']
-        print "googleChannelId: ", googleChannelId
-        googleMessageNumber = headers['HTTP_X_GOOG_MESSAGE_NUMBER']
-        print "googleMessageNumber: ", googleMessageNumber
-    except:
-        print "error parsing Google Resources..."
-        googleResourceState = 'fail'
+	try:
+		googleResourceUri = headers['HTTP_X_GOOG_RESOURCE_URI']
+		print "googleResourceUri: ", googleResourceUri
+		googleResourceState = headers['HTTP_X_GOOG_RESOURCE_STATE']
+		print "googleResourceState: ", googleResourceState
+		googleResourceId = headers['HTTP_X_GOOG_RESOURCE_ID']
+		print "googleResourceId: ", googleResourceId
+		googleChannelId = headers['HTTP_X_GOOG_CHANNEL_ID']
+		print "googleChannelId: ", googleChannelId
+		googleMessageNumber = headers['HTTP_X_GOOG_MESSAGE_NUMBER']
+		print "googleMessageNumber: ", googleMessageNumber
+	except:
+		print "error parsing Google Resources..."
+		googleResourceState = 'fail'
 
-    if googleResourceState == 'sync':
-        #getAllEvents(googleResourceUri, googleChannelId, googleResourceId)
-        print "sync..passing"
+	if googleResourceState == 'sync':
+		#getAllEvents(googleResourceUri, googleChannelId, googleResourceId)
+		print "sync..passing"
 
-    elif googleResourceState == 'exists':
-        getNewEvents(googleResourceUri, googleChannelId, googleResourceId)
+	elif googleResourceState == 'exists':
+		getNewEvents(googleResourceUri, googleChannelId, googleResourceId)
 
-    ## ping myself in Slack
-    response = requests.post(mySlackWebhookUrl, data=json.dumps({'text':'you have a new Calendar event!', 'channel':'@taylor'}))
-    if response.status_code != 200:
-        print response
-        print "data:", response.json()
+		## ping myself in Slack
+		response = requests.post(mySlackWebhookUrl, data=json.dumps({
+																	"text": "Would you like to play a game?",
+																	"attachments": [
+																		{
+																			"text": "Choose a game to play",
+																			"fallback": "You are unable to choose a game",
+																			"callback_id": "wopr_game",
+																			"color": "#3AA3E3",
+																			"attachment_type": "default",
+																			"actions": [
+																				{
+																					"name": "chess",
+																					"text": "Chess",
+																					"type": "button",
+																					"value": "chess"
+																				},
+																				{
+																					"name": "maze",
+																					"text": "Falken's Maze",
+																					"type": "button",
+																					"value": "maze"
+																				},
+																				{
+																					"name": "war",
+																					"text": "Thermonuclear War",
+																					"style": "danger",
+																					"type": "button",
+																					"value": "war",
+																					"confirm": {
+																						"title": "Are you sure?",
+																						"text": "Wouldn't you prefer a good game of chess?",
+																						"ok_text": "Yes",
+																						"dismiss_text": "No"
+																					}
+																				}
+																			]
+																		}
+																	]
+																}))
+		if response.status_code != 200:
+			print response
+			print "data:", response.json()
 
-    return HttpResponse("OK")
+	return HttpResponse("OK")
 
 
 def auth(request):
