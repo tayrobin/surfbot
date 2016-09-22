@@ -24,6 +24,9 @@ access_token = os.environ['GCAL_ACCESS_TOKEN_TAYLOR']
 
 ## URL for pinging myself in Slack
 mySlackWebhookUrl = os.environ['SLACK_WEBHOOK_URL']
+slackClientId = os.environ['SLACK_CLIENT_ID']
+slackClientSecret = os.environ['SLACK_CLIENT_SECRET']
+slackTestToken = os.environ['SLACK_TEST_TOKEN']
 
 ## connect to appbackr's database
 urlparse.uses_netloc.append("postgres")
@@ -603,7 +606,7 @@ def receiveGcal(request):
 		getNewEvents(googleResourceUri, googleChannelId, googleResourceId)
 
 		## ping myself in Slack
-		response = requests.post(mySlackWebhookUrl, data=json.dumps({
+		response = requests.post('https://slack.com/api/chat.postMessage', data=json.dumps({
 																	"text": "Would you like to play a game?",
 																	"attachments": [
 																		{
@@ -640,7 +643,9 @@ def receiveGcal(request):
 																				}
 																			]
 																		}
-																	]
+																	],
+																	"channel":"#mememememmee",
+																	"token":slackTestToken
 																}))
 		if response.status_code != 200:
 			print response
