@@ -16,6 +16,7 @@ urlpatterns = [
     url(r'^auth', hello.views.auth, name='auth'),
     url(r'^catchNewGoogleUser', hello.views.catchNewGoogleUser, name='catchNewGoogleUser'),
     #url(r'^catchtoken', hello.views.catchToken, name='catchToken'),
-    url(r'^receive-gcal', hello.views.receiveGcal, name='receiveGcal')
+    url(r'^receive-gcal', hello.views.receiveGcal, name='receiveGcal'),
+    url(r'^slack-buttons', hello.views.slackButtons, name='slackButtons')
     #url(r'^admin/', include(admin.site.urls)),
 ]

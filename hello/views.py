@@ -649,6 +649,15 @@ def receiveGcal(request):
 	return HttpResponse("OK")
 
 
+@csrf_exempt
+def slackButtons(request):
+
+	print "Response to Slack Button incoming."
+	print "POST:", request.POST
+	print "Headers:", request.META
+	print "Body:", request.body
+
+
 def auth(request):
 
 	print "Loading Auth page."
