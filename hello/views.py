@@ -606,7 +606,7 @@ def receiveGcal(request):
 		getNewEvents(googleResourceUri, googleChannelId, googleResourceId)
 
 		## ping myself in Slack
-		response = requests.post('https://slack.com/api/chat.postMessage', data=json.dumps({
+		response = requests.post('https://slack.com/api/chat.postMessage', params=json.dumps({
 																	"text": "Would you like to play a game?",
 																	"attachments": [
 																		{
@@ -644,10 +644,10 @@ def receiveGcal(request):
 																			]
 																		}
 																	],
-																	"channel":"G08DDQYQP"
+																	"channel":"G08DDQYQP",
+																	"token":slackTestToken
 																}),
-																headers={"Content-Type":"application/json"},
-																params={"token":slackTestToken})
+																headers={"Content-Type":"application/json"})
 		#if response.status_code != 200:
 		print response
 		print "data:", response.json()
