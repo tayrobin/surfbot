@@ -644,7 +644,7 @@ def receiveGcal(request):
 																			]
 																		}
 																	],
-																	"channel":"#mememememmee"
+																	"channel":"G08DDQYQP"
 																}),
 																headers={"Content-Type":"application/json"},
 																params={"token":slackTestToken})
