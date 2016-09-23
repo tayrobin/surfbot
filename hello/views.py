@@ -683,7 +683,7 @@ def slackButtons(request):
 	incomingPost = request.POST
 	print "POST:", incomingPost
 	print "Headers:", request.META
-	payloadString = incomingPost['payload'][0]
+	payloadString = incomingPost['payload']
 	print "payloadString:", payloadString
 	inputs = json.loads(payloadString)
 	print "json POST['payload'][0]:", inputs
