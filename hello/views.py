@@ -659,9 +659,9 @@ def receiveGcal(request):
 def slackButtons(request):
 
 	print "Response to Slack Button incoming."
-	print "POST:", request.POST
+	inputs = dict(request.POST)
+	print "data:", inputs
 	print "Headers:", request.META
-	print "data:", request.json()
 
 	return HttpResponse('OK')
 
