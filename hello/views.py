@@ -668,7 +668,9 @@ def callTwilio():
 
 	client = TwilioRestClient(account_sid, auth_token)
 
-	message = client.messages.create(body="Hello from Python",
+	textMessage = "A strange game.\nThe only winning move is not to play."
+
+	message = client.messages.create(body=textMessage,
 										to="+13178094648",	# Replace with your phone number
 										from_="+13176534088") # Replace with your Twilio number
 
