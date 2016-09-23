@@ -679,12 +679,13 @@ def callTwilio():
 def slackButtons(request):
 
 	print "Response to Slack Button incoming."
-	#inputs = json.loads(request.POST)
-	#inputs = json.loads(request.POST)
-	print "POST:", request.POST
+
+	incomingPost = request.POST
+	print "POST:", incomingPost
 	print "Headers:", request.META
-	print "body:", request.body
-	inputs = json.loads(request.POST['payload'][0])
+	payloadString = incomingPost['payload'][0]
+	print "payloadString:", payloadString
+	inputs = json.loads(payloadString)
 	print "json POST['payload'][0]:", inputs
 
 	if inputs['actions'][0]['value'] == 'war':
