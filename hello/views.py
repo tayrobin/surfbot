@@ -608,7 +608,7 @@ def receiveGcal(request):
 		## ping myself in Slack
 		response = requests.post('https://slack.com/api/chat.postMessage', params={
 																	"text": "Would you like to play a game?",
-																	"attachments": [
+																	"attachments": json.dumps([
 																		{
 																			"text": "Choose a game to play",
 																			"fallback": "You are unable to choose a game",
@@ -643,7 +643,7 @@ def receiveGcal(request):
 																				}
 																			]
 																		}
-																	],
+																	]),
 																	"channel":"@taylor",
 																	"token":slackTestToken
 																},
