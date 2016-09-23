@@ -661,7 +661,9 @@ def slackButtons(request):
 	print "Response to Slack Button incoming."
 	print "POST:", request.POST
 	print "Headers:", request.META
-	print "Body:", request.body
+	print "data:", request.json()
+
+	return HttpResponse('OK')
 
 
 def auth(request):
