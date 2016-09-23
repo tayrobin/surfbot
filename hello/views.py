@@ -679,7 +679,8 @@ def callTwilio():
 def slackButtons(request):
 
 	print "Response to Slack Button incoming."
-	inputs = dict(request.POST)
+	#inputs = json.loads(request.POST)
+	inputs = json.loads(request.body)
 	print "data:", inputs
 	print "Headers:", request.META
 
