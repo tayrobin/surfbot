@@ -4,6 +4,8 @@ from django.http import HttpResponseRedirect
 from django.http import JsonResponse
 import json, random, requests, os, psycopg2, urlparse, uuid
 from django.views.decorators.csrf import csrf_exempt
+from twilio.twiml import Response
+from twilio.rest import TwilioRestClient
 
 ## appbackr Endorsement URL [requires package_name & api_key & auth_token]
 endorsementUrl = "https://index.appbackr.com/v1/endorsements"
@@ -655,6 +657,23 @@ def receiveGcal(request):
 	return HttpResponse("OK")
 
 
+def callTwilio():
+	r = Response()
+    r.message('Hello from your Django app!')
+    return HttpResponse(r.toxml(), content_type='text/xml')
+
+	account_sid = os.environ['TWILIO_ACCOUNT_SID']
+	auth_token  = os.environ['TWILIO_AUTH_TOKEN']
+
+	client = TwilioRestClient(account_sid, auth_token)
+
+	message = client.messages.create(body="Hello from Python",
+	    to="+13178094648",    # Replace with your phone number
+	    from_="+13176534088") # Replace with your Twilio number
+
+	print message.sid
+
+
 @csrf_exempt
 def slackButtons(request):
 
@@ -662,6 +681,14 @@ def slackButtons(request):
 	inputs = dict(request.POST)
 	print "data:", inputs
 	print "Headers:", request.META
+
+	try:
+		if inputs['payload'][0]['actions'][0]['value'] == 'war':
+			print "User wants war!"
+			## call Twilio
+			callTwilio()
+	except:
+		pass
 
 	return HttpResponse(status=200)
 
