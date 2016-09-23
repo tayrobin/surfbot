@@ -648,9 +648,9 @@ def receiveGcal(request):
 																	"token":slackTestToken
 																},
 																headers={"Content-Type":"application/json"})
-		#if response.status_code != 200:
-		print response
-		print "data:", response.json()
+		if 'error' in response:
+			print response
+			print "data:", response.json()
 
 	return HttpResponse("OK")
 
@@ -663,7 +663,7 @@ def slackButtons(request):
 	print "data:", inputs
 	print "Headers:", request.META
 
-	return HttpResponse('OK')
+	return HttpResponse(status=200)
 
 
 def auth(request):
