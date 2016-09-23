@@ -683,13 +683,10 @@ def slackButtons(request):
 	print "data:", inputs
 	print "Headers:", request.META
 
-	try:
-		if inputs['payload'][0]['actions'][0]['value'] == 'war':
-			print "User wants war!"
-			## call Twilio
-			callTwilio()
-	except:
-		pass
+	if inputs['payload'][0]['actions'][0]['value'] == 'war':
+		print "User wants war!"
+		## call Twilio
+		callTwilio()
 
 	return HttpResponse(status=200)
 
