@@ -658,9 +658,10 @@ def receiveGcal(request):
 
 
 def callTwilio():
-	r = Response()
-    r.message('Hello from your Django app!')
-    return HttpResponse(r.toxml(), content_type='text/xml')
+
+	#r = Response()
+	#r.message('Hello from your Django app!')
+	#return HttpResponse(r.toxml(), content_type='text/xml')
 
 	account_sid = os.environ['TWILIO_ACCOUNT_SID']
 	auth_token  = os.environ['TWILIO_AUTH_TOKEN']
@@ -668,8 +669,8 @@ def callTwilio():
 	client = TwilioRestClient(account_sid, auth_token)
 
 	message = client.messages.create(body="Hello from Python",
-	    to="+13178094648",    # Replace with your phone number
-	    from_="+13176534088") # Replace with your Twilio number
+										to="+13178094648",	# Replace with your phone number
+										from_="+13176534088") # Replace with your Twilio number
 
 	print message.sid
 
