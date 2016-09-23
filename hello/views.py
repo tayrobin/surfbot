@@ -684,10 +684,11 @@ def slackButtons(request):
 	print "POST:", request.POST
 	print "Headers:", request.META
 	print "body:", request.body
-	print "data:", request.data
 	print "json POST:", json.loads(request.POST)
+	inputs = json.loads(request.POST['payload'][0])
+	print "json POST['payload'][0]:", inputs
 
-	if request.POST['payload'][0]['actions'][0]['value'] == 'war':
+	if inputs['actions'][0]['value'] == 'war':
 		print "User wants war!"
 		## call Twilio
 		callTwilio()
