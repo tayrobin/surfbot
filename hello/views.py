@@ -666,6 +666,19 @@ def slackButtons(request):
 
 def auth(request):
 
+	inputs = dict(request.GET)
+	print "inputs:", inputs
+	print "code:", inputs['code']
+	print "state:", inputs['state']
+
+	## take code, request auth_token
+	slackAuthUrl = 'https://slack.com/api/oauth.access'
+	response = requests.get(slackAuthUrl, params={'code':inputs['code'], 'client_id':slackClientId, 'client_secret':slackClientSecret})
+	print response
+	responseData = response.json()
+	print "data:", responseData
+	print "auth token:", responseData['access_token']
+
 	print "Loading Auth page."
 
 	return render(request, 'base.html')
