@@ -412,7 +412,7 @@ def getAllEvents(uri, uuid, resource_id):
 		print "next_sync_token saved."
 
 
-def getNewEvents(uri, uuid, resource_id):
+def getNewEvents(uri, uuid, resource_id, next_page_token_given=None):
 
 	print "Updating Events since last sync"
 
@@ -426,12 +426,20 @@ def getNewEvents(uri, uuid, resource_id):
 		print "unable to grab access_token and sync_token from database... have I seen this user before?"
 		return
 
-	response = requests.get(uri, headers={'Content-Type':'application/json'}, params={'access_token':access_token, 'syncToken':sync_token})
+	if next_page_token_given is not None:
+		response = requests.get(uri, headers={'Content-Type':'application/json'}, params={'access_token':access_token, 'syncToken':sync_token, 'pageToken':next_page_token_given})
+	else:
+		response = requests.get(uri, headers={'Content-Type':'application/json'}, params={'access_token':access_token, 'syncToken':sync_token})
 
 	if response.status_code == 200:
 
 		newEvents = response.json()
 		print "newEvents: ", newEvents
+
+		if 'nextPageToken' in newEvents and (newEvents['nextPageToken'] is not None or newEvents['nextPageToken'] != ''):
+			next_page_token = newEvents['nextPageToken']
+			print "Have a nextPageToken.. re-calling sync calendar method recursively"
+			getNewEvents(uri, uuid, resource_id, next_page_token)
 
 		if 'nextSyncToken' in newEvents:
 			next_sync_token = newEvents['nextSyncToken']
@@ -450,33 +458,12 @@ def getNewEvents(uri, uuid, resource_id):
 		else:
 			print "no new events"
 	elif response.status_code == 401:
+
 		print "outdated access_token\nCalling refresh method"
 		access_token = refreshAuthToken(access_token)
-		response = requests.get(uri, headers={'Content-Type':'application/json'}, params={'access_token':access_token, 'syncToken':sync_token})
-		if response.status_code == 200:
-			newEvents = response.json()
-			print "newEvents: ", newEvents
+		print "have new access_token saved...recursively calling getNewEvents"
+		getNewEvents(uri, uuid, resource_id)
 
-			if 'nextSyncToken' in newEvents:
-				next_sync_token = newEvents['nextSyncToken']
-				print "next_sync_token: ", next_sync_token
-
-				cur.execute(saveNextSyncToken, {'next_sync_token':next_sync_token, 'resource_uri':uri, 'resource_uuid':uuid, 'resource_id':resource_id})
-				conn.commit()
-				print "next_sync_token saved."
-
-			if 'items' in newEvents and newEvents['items'] != []:
-				for event in newEvents['items']:
-					eventId = event['id']
-					if event['kind'] == 'calendar#event':
-						#getEvent(eventId, uri, access_token)
-						pass
-					else:
-						print "no new events"
-		else:
-			print "still have invalid auth token .. giving up"
-			print "headers: ", response.headers
-			print "text: ", response.text
 	else:
 
 		print response
@@ -659,16 +646,12 @@ def receiveGcal(request):
 
 def callTwilio():
 
-	#r = Response()
-	#r.message('Hello from your Django app!')
-	#return HttpResponse(r.toxml(), content_type='text/xml')
+	twilio_account_sid = os.environ['TWILIO_ACCOUNT_SID']
+	twilio_auth_token  = os.environ['TWILIO_AUTH_TOKEN']
 
-	account_sid = os.environ['TWILIO_ACCOUNT_SID']
-	auth_token  = os.environ['TWILIO_AUTH_TOKEN']
+	client = TwilioRestClient(twilio_account_sid, twilio_auth_token)
 
-	client = TwilioRestClient(account_sid, auth_token)
-
-	textMessage = "\nA strange game.\nThe only winning move is not to play."
+	textMessage = "A strange game.\nThe only winning move is not to play."
 
 	message = client.messages.create(body=textMessage,
 										to="+13178094648",	# Replace with your phone number
