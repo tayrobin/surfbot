@@ -434,7 +434,7 @@ def getNewEvents(uri, uuid, resource_id, next_page_token_given=None):
 	if response.status_code == 200:
 
 		newEvents = response.json()
-		print "newEvents: ", newEvents
+		print "newEvents: ", json.dumps(newEvents)
 
 		if 'nextPageToken' in newEvents and (newEvents['nextPageToken'] is not None or newEvents['nextPageToken'] != ''):
 			next_page_token = newEvents['nextPageToken']
@@ -454,7 +454,50 @@ def getNewEvents(uri, uuid, resource_id, next_page_token_given=None):
 
 				newEvent = newEvents['items'][0]
 
+				#### Event Details Overview ####
+				#### cancelled Event
+				# status: cancelled
+				# kind: calendar#event
+				# eventId: 6tfas1pil9m79d9v1d1gotb0eo
+				#### self-created Event
+				# status: confirmed
+				# startDateTime: 2016-10-11T17:30:00-07:00
+				# endDateTime: 2016-10-11T18:30:00-07:00
+				# kind: calendar#event
+				# eventTitle: fun stuff 3
+				# eventId: hnec4hn7ept4p78i0k18qabei0
+				# htmlLink: https://www.google.com/calendar/event?eid=aG5lYzRobjdlcHQ0cDc4aTBrMThxYWJlaTAgdGF5bG9yQGFwcGJhY2tyLmNvbQ
+				# organizerDisplayName: Taylor Robinson
+				# organizerIsSelf: True
+				# organizerEmail: taylor@appbackr.com
+				# creatorDisplayName: Taylor Robinson
+				# creatorIsSelf: True
+				# creatorEmail: taylor@appbackr.com
+				#### invited to someone else's Event
+				# status: confirmed
+				# startDateTime: 2016-10-11T19:00:00-07:00
+				# endDateTime: 2016-10-11T20:00:00-07:00
+				# kind: calendar#event
+				# eventTitle: Breakfast at Tiffany's
+				# eventId: 932hp9b1dqt2c4rf20djt8e3g0
+				# htmlLink: https://www.google.com/calendar/event?eid=OTMyaHA5YjFkcXQyYzRyZjIwZGp0OGUzZzAgdGF5bG9yQGFwcGJhY2tyLmNvbQ
+				# organizerDisplayName: Taylor Robinson
+				# organizerEmail: taylor.howard.robinson@gmail.com
+				# creatorDisplayName: Taylor Robinson
+				# creatorIsSelf: True
+				# creatorEmail: taylor@appbackr.com
+
+				## also have attendee objects list
+				# responseStatus: needsAction, accepted, declined
+				# self: True
+				# email:
+				# displayName:
+				# organizer: True
+
+
+
 				## parse Event Details
+				print "-- Parsing Event Details --"
 				# status .. hoping for 'confirmed'
 				try:
 					status = newEvent['status']
@@ -503,7 +546,7 @@ def getNewEvents(uri, uuid, resource_id, next_page_token_given=None):
 					print 'organizerDisplayName:', organizerDisplayName
 				except:
 					organizerDisplayName = None
-				# organizer.self .. Boolean for if I am the person organizing the Event
+				# organizer.self .. Boolean for if I am the person organizing the Event ## None & False are the same
 				try:
 					organizerIsSelf = newEvent['organizer']['self']
 					print 'organizerIsSelf:', organizerIsSelf
@@ -515,14 +558,14 @@ def getNewEvents(uri, uuid, resource_id, next_page_token_given=None):
 					print 'organizerEmail:', organizerEmail
 				except:
 					organizerEmail = None
-				### I don't know what the difference between an Organizer and a Creator is... ###
+				### I don't know what the difference between an Organizer and a Creator is... ### (creator seems to always be me, organizer is who physically started the event)
 				# creator.displayName .. Name of the Person creating the Event
 				try:
 					creatorDisplayName = newEvent['creator']['displayName']
 					print 'creatorDisplayName:', creatorDisplayName
 				except:
 					creatorDisplayName = None
-				# creator.self .. Boolean for if I am the person creating the Event
+				# creator.self .. Boolean for if I am the person creating the Event ## None & False are the same
 				try:
 					creatorIsSelf = newEvent['creator']['self']
 					print 'creatorIsSelf:', creatorIsSelf
@@ -534,7 +577,68 @@ def getNewEvents(uri, uuid, resource_id, next_page_token_given=None):
 					print 'creatorEmail:', creatorEmail
 				except:
 					creatorEmail = None
+				if 'attendees' in newEvent:
+					for person in newEvent['attendees']:
+						if 'self' in person:
+							if person['self']:
+								# responseStatus ... needsAction, accepted, declined
+								try:
+									responseStatus = person['responseStatus']
+									print "responseStatus:", responseStatus
+								except:
+									responseStatus = None
 				## end parsing Event Details
+
+
+				##### react to details above #####
+				if status == 'confirmed' and responseStatus == 'accepted':
+
+					## ping myself in Slack
+					response = requests.post('https://slack.com/api/chat.postMessage', params={
+																				"text": "I see you've accepted a new Calendar Event!",
+																				"attachments": json.dumps([
+																					{
+																						"text": "How can I help you react?",
+																						"fallback": "Looks like I'm temporarily unable to help you, sorry.",
+																						"callback_id": "wopr_game",
+																						"color": "#3AA3E3",
+																						"attachment_type": "default",
+																						"actions": [
+																							{
+																								"name": "food",
+																								"text": "Order Food",
+																								"type": "button",
+																								"value": "food"
+																							},
+																							{
+																								"name": "uber",
+																								"text": "Call an Uber",
+																								"type": "button",
+																								"value": "uber"
+																							},
+																							{
+																								"name": "text",
+																								"text": "Text my Wife",
+																								"style": "danger",
+																								"type": "button",
+																								"value": "war",
+																								"confirm": {
+																									"title": "Are you sure?",
+																									"text": "I will immediately text your Wife at +1(317)809-4648 informing her of the delay.",
+																									"ok_text": "Yes",
+																									"dismiss_text": "No"
+																								}
+																							}
+																						]
+																					}
+																				]),
+																				"channel":"@taylor",
+																				"token":slackTestToken
+																			},
+																			headers={"Content-Type":"application/json"})
+					if 'error' in response:
+						print response
+						print "data:", response.json()
 
 
 
@@ -676,53 +780,6 @@ def receiveGcal(request):
 
 	elif googleResourceState == 'exists':
 		getNewEvents(googleResourceUri, googleChannelId, googleResourceId)
-
-		## ping myself in Slack
-		response = requests.post('https://slack.com/api/chat.postMessage', params={
-																	"text": "Would you like to play a game?",
-																	"attachments": json.dumps([
-																		{
-																			"text": "Choose a game to play",
-																			"fallback": "You are unable to choose a game",
-																			"callback_id": "wopr_game",
-																			"color": "#3AA3E3",
-																			"attachment_type": "default",
-																			"actions": [
-																				{
-																					"name": "chess",
-																					"text": "Chess",
-																					"type": "button",
-																					"value": "chess"
-																				},
-																				{
-																					"name": "maze",
-																					"text": "Falken's Maze",
-																					"type": "button",
-																					"value": "maze"
-																				},
-																				{
-																					"name": "war",
-																					"text": "Thermonuclear War",
-																					"style": "danger",
-																					"type": "button",
-																					"value": "war",
-																					"confirm": {
-																						"title": "Are you sure?",
-																						"text": "Wouldn't you prefer a good game of chess?",
-																						"ok_text": "Yes",
-																						"dismiss_text": "No"
-																					}
-																				}
-																			]
-																		}
-																	]),
-																	"channel":"@taylor",
-																	"token":slackTestToken
-																},
-																headers={"Content-Type":"application/json"})
-		if 'error' in response:
-			print response
-			print "data:", response.json()
 
 	return HttpResponse("OK")
 
