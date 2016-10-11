@@ -378,7 +378,7 @@ def getEvent(event_id, uri, access_token):
 
 	print "Fetching Calendar Event for user"
 
-	eventUrl = uri.strip('?maxResults=250&alt=json')+"/"+event_id
+	eventUrl = uri.strip('?maxResults=250&alt=json')+"/"+event_id  ### seemingly producing a 404 error, need to read Docs more...
 
 	response = requests.get(eventUrl, headers={'Content-Type': 'application/json'}, params={'access_token':access_token})
 
@@ -450,11 +450,94 @@ def getNewEvents(uri, uuid, resource_id, next_page_token_given=None):
 			print "next_sync_token saved."
 
 		if 'items' in newEvents and newEvents['items'] != []:
-			for event in newEvents['items']:
-				eventId = event['id']
-				if event['kind'] == 'calendar#event':
-					getEvent(eventId, uri, access_token)
-					pass
+			if len(newEvents['items']) == 1:
+
+				newEvent = newEvents['items'][0]
+
+				## parse Event Details
+				# status .. hoping for 'confirmed'
+				try:
+					status = newEvent['status']
+					print 'status:', status
+				except:
+					status = None
+				# start.dateTime .. timestamp with timezone of start
+				try:
+					startDateTime = newEvent['start']['dateTime']
+					print 'startDateTime:', startDateTime
+				except:
+					startDateTime = None
+				# end.dateTime .. timestamp with timezone of end
+				try:
+					endDateTime = newEvent['end']['dateTime']
+					print 'endDateTime:', endDateTime
+				except:
+					endDateTime = None
+				# kind .. hoping for 'calendar#event'
+				try:
+					kind = newEvent['kind']
+					print 'kind:', kind
+				except:
+					kind = None
+				# summary .. Title of the Event
+				try:
+					eventTitle = newEvent['summary']
+					print 'eventTitle:', eventTitle
+				except:
+					eventTitle = None
+				# id .. ID of the Event
+				try:
+					eventId = newEvent['id']
+					print 'eventId:', eventId
+				except:
+					eventId = None
+				# htmlLink .. link to the Event
+				try:
+					htmlLink = newEvent['htmlLink']
+					print 'htmlLink:', htmlLink
+				except:
+					htmlLink = None
+				# organizer.displayName .. Name of the Person organizing the Event
+				try:
+					organizerDisplayName = newEvent['organizer']['displayName']
+					print 'organizerDisplayName:', organizerDisplayName
+				except:
+					organizerDisplayName = None
+				# organizer.self .. Boolean for if I am the person organizing the Event
+				try:
+					organizerIsSelf = newEvent['organizer']['self']
+					print 'organizerIsSelf:', organizerIsSelf
+				except:
+					organizerIsSelf = None
+				# organizer.email .. Email of the Person organizing the Event
+				try:
+					organizerEmail = newEvent['organizer']['email']
+					print 'organizerEmail:', organizerEmail
+				except:
+					organizerEmail = None
+				### I don't know what the difference between an Organizer and a Creator is... ###
+				# creator.displayName .. Name of the Person creating the Event
+				try:
+					creatorDisplayName = newEvent['creator']['displayName']
+					print 'creatorDisplayName:', creatorDisplayName
+				except:
+					creatorDisplayName = None
+				# creator.self .. Boolean for if I am the person creating the Event
+				try:
+					creatorIsSelf = newEvent['creator']['self']
+					print 'creatorIsSelf:', creatorIsSelf
+				except:
+					creatorIsSelf = None
+				# creator.email .. Email of the Person creating the Event
+				try:
+					creatorEmail = newEvent['creator']['email']
+					print 'creatorEmail:', creatorEmail
+				except:
+					creatorEmail = None
+				## end parsing Event Details
+
+
+
 		else:
 			print "no new events"
 	elif response.status_code == 401:
