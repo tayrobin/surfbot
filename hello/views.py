@@ -857,7 +857,7 @@ def slackButtons(request):
 																			]
 																		}
 																	]),
-																	"channel":"@taylor",
+																	"channel":"D035YL9P9",
 																	"token":slackTestToken
 																}, headers={"Content-Type":"application/json"})
 		print response.json()
