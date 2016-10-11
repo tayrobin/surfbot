@@ -528,6 +528,18 @@ def getNewEvents(uri, uuid, resource_id, next_page_token_given=None):
 					print 'eventTitle:', eventTitle
 				except:
 					eventTitle = None
+				# description .. description of the Event
+				try:
+					description = newEvent['description']
+					print 'description:', description
+				except:
+					description = None
+				# location .. location of the Event
+				try:
+					location = newEvent['location']
+					print 'location:', location
+				except:
+					location = None
 				# id .. ID of the Event
 				try:
 					eventId = newEvent['id']
