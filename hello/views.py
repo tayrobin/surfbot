@@ -832,6 +832,34 @@ def slackButtons(request):
 		## call Twilio
 		callTwilio()
 
+		## update original message
+		original_message_ts = inputs['message_ts']
+		response = requests.post("https://slack.com/api/chat.update" params={
+																	"ts": original_message_ts,
+																	"replace_original": True,
+																	"text": "I see you've accepted a new Calendar Event!",
+																	"attachments": json.dumps([
+																		{
+																			"text": "How can I help you react?",
+																			"fallback": "Looks like I'm temporarily unable to help you, sorry.",
+																			"callback_id": "wopr_game",
+																			"color": "#3AA3E3",
+																			"attachment_type": "default",
+																			"actions": [
+																				{
+																					"name": "text",
+																					"text": "Text my Wife",
+																					"style": "primary",
+																					"type": "button",
+																					"value": "warz",
+																				}
+																			]
+																		}
+																	]),
+																	"channel":"@taylor",
+																	"token":slackTestToken
+																}, headers={"Content-Type":"application/json"})
+
 	return HttpResponse(status=200)
 
 
