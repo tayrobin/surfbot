@@ -587,6 +587,8 @@ def getNewEvents(uri, uuid, resource_id, next_page_token_given=None):
 									print "responseStatus:", responseStatus
 								except:
 									responseStatus = None
+				else:
+					responseStatus = 'accepted'
 				## end parsing Event Details
 
 
