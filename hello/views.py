@@ -378,7 +378,7 @@ def getEvent(event_id, uri, access_token):
 
 	print "Fetching Calendar Event for user"
 
-	eventUrl = uri.strip('?alt=json')+"/"+event_id
+	eventUrl = uri.strip('?maxResults=250&alt=json')+"/"+event_id
 
 	response = requests.get(eventUrl, headers={'Content-Type': 'application/json'}, params={'access_token':access_token})
 
@@ -453,7 +453,7 @@ def getNewEvents(uri, uuid, resource_id, next_page_token_given=None):
 			for event in newEvents['items']:
 				eventId = event['id']
 				if event['kind'] == 'calendar#event':
-					#getEvent(eventId, uri, access_token)
+					getEvent(eventId, uri, access_token)
 					pass
 		else:
 			print "no new events"
