@@ -609,7 +609,7 @@ def getNewEvents(uri, uuid, resource_id, next_page_token_given=None):
 
 					## ping myself in Slack
 					response = requests.post('https://slack.com/api/chat.postMessage', params={
-																				"text": "I see you've accepted a new Calendar Event!",
+																				"text": "I see you've accepted a new Calendar Event!\nTitle: %(event_title)s\nDescription: %(event_description)s\nStart: %(start_time)s\nEnd: %(end_time)s\nLocation: %(event_location)s"%{'event_title':eventTitle, 'event_description':description, 'start_time':startDateTime, 'end_time':endDateTime, 'event_location':location},
 																				"attachments": json.dumps([
 																					{
 																						"text": "How can I help you react?",
