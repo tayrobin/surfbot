@@ -834,7 +834,7 @@ def slackButtons(request):
 
 		## update original message
 		original_message_ts = inputs['message_ts']
-		response = requests.post("https://slack.com/api/chat.update" params={
+		response = requests.post("https://slack.com/api/chat.update", params={
 																	"ts": original_message_ts,
 																	"replace_original": True,
 																	"text": "I see you've accepted a new Calendar Event!",
