@@ -833,6 +833,7 @@ def slackButtons(request):
 		callTwilio()
 
 		## update original message
+		print "updating original Slack message"
 		original_message_ts = inputs['message_ts']
 		response = requests.post("https://slack.com/api/chat.update", params={
 																	"ts": original_message_ts,
@@ -859,6 +860,7 @@ def slackButtons(request):
 																	"channel":"@taylor",
 																	"token":slackTestToken
 																}, headers={"Content-Type":"application/json"})
+		print response.json()
 
 	return HttpResponse(status=200)
 
